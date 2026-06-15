@@ -6,12 +6,11 @@
     <title>SMS ERP</title>
     <style>
         :root {
-            --glass-bg: #ffffff;
-            --glass-bg-hover: #f5f5f0;
-            --glass-border: #b0b0a8;
+            --card-bg: #ffffff;
+            --card-bg-hover: #f5f5f0;
+            --border: #b0b0a8;
             --text-main: #2c3e50;
             --text-muted: #607d8b;
-            --accent-glow: #ffffff;
             --success-color: #2ecc71;
             --danger-color: #e74c3c;
             --warning-color: #f1c40f;
@@ -32,10 +31,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-        }
-
-        .ambient-glow {
-            display: none !important;
         }
 
         /* ERP Classic Layout structures */
@@ -323,7 +318,7 @@
         main {
             flex-grow: 1;
             height: 100%;
-            overflow-y: auto;
+            overflow: hidden;
             padding: 8px;
             position: relative;
             background: #fdfdfb;
@@ -331,7 +326,13 @@
 
         .app-view {
             display: none;
+            height: 100%;
             animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .app-view.scrollable-view {
+            height: 100%;
+            overflow-y: auto;
         }
 
         .app-view.active-view {
@@ -491,8 +492,8 @@
         .input-group input, .input-group select {
             padding: 11px 14px;
             border-radius: 8px;
-            border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border);
+            background: #ffffff;
             font-size: 0.95rem;
             color: var(--text-main);
             outline: none;
@@ -533,8 +534,8 @@
         }
 
         .live-calc-box {
-            background: rgba(255, 255, 255, 0.6);
-            border: 1px solid var(--glass-border);
+            background: #ffffff;
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 11px;
             font-weight: 600;
@@ -633,8 +634,8 @@
         }
 
         .metric-card {
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid var(--glass-border);
+            background: #ffffff;
+            border: 1px solid var(--border);
             padding: 20px;
             border-radius: 12px;
             text-align: center;
@@ -665,8 +666,8 @@
         .filter-input {
             padding: 8px 12px;
             border-radius: 6px;
-            border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--border);
+            background: #ffffff;
             font-size: 0.9rem;
         }
 
@@ -720,7 +721,7 @@
             display: grid;
             grid-template-columns: 320px 1fr;
             gap: 8px;
-            height: calc(100vh - 45px);
+            height: 100%;
             overflow: hidden;
             font-size: 0.82rem;
         }
@@ -1145,10 +1146,8 @@
             right: -420px;
             width: 400px;
             height: 100vh;
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-left: 1px solid var(--glass-border);
+            background: #ffffff;
+            border-left: 1px solid var(--border);
             box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
             z-index: 1000;
             transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1246,7 +1245,7 @@
             <!-- Main App Container -->
             <main id="app-container">
 
-        <section id="view-blank" class="app-view active-view" style="height: calc(100vh - 40px); overflow-y: auto; background: #f4f4f0;">
+        <section id="view-blank" class="app-view active-view scrollable-view" style="background: #f4f4f0;">
             <div style="padding: 20px; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
                 
                 <!-- Welcome Banner -->
@@ -1761,7 +1760,7 @@
         </section>
 
         <section id="view-purity-master" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>SHADE MASTER CONFIGURATION</span>
                 </div>
@@ -1787,7 +1786,7 @@
         </section>
 
         <section id="view-number-master" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>NUMBER MASTER CONFIGURATION</span>
                 </div>
@@ -1813,7 +1812,7 @@
         </section>
 
         <section id="view-size-master" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>SIZE MASTER CONFIGURATION</span>
                 </div>
@@ -1839,7 +1838,7 @@
         </section>
 
         <section id="view-party-master" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>PARTY MASTER CONFIGURATION</span>
                 </div>
@@ -1865,7 +1864,7 @@
         </section>
 
         <section id="view-broker-master" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>BROKER MASTER CONFIGURATION</span>
                 </div>
@@ -1891,7 +1890,7 @@
         </section>
 
         <section id="view-payment-ir" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>PAYMENT INWARD / OUTWARD RECORDS (IR ROSE AGING)</span>
                 </div>
@@ -1917,7 +1916,7 @@
         </section>
 
         <section id="view-rojmel" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>TRANSACTION LOG & DAILY ROJMEL</span>
                 </div>
@@ -1959,7 +1958,7 @@
         </section>
 
         <section id="view-mix" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>POLISH MIX / NUMBER SORTING TRANSFER ENGINE</span>
                 </div>
@@ -2034,7 +2033,7 @@
         </section>
 
         <section id="view-opening" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px; display: flex; flex-direction: column;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                     <span>CREATE SERIES / OPENING STOCK WIZARD</span>
                     <!-- Tab selector for Wizard vs Series Master -->
@@ -2222,7 +2221,7 @@
         </section>
 
         <section id="view-reports" class="app-view">
-            <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
+            <div class="erp-right-form">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
                     <span>REPORT MASTER ANALYTICS COMMAND CENTER</span>
                 </div>
@@ -2321,7 +2320,7 @@
         </section>
 
         <!-- Centered Quick Master Modal overlay dialog -->
-        <div id="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.15); backdrop-filter: blur(5px); z-index: 1999;" onclick="closeQuickMasterModal()"></div>
+        <div id="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.25); z-index: 1999;" onclick="closeQuickMasterModal()"></div>
         <div id="quick-master-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; width: 400px; background: #f0f0eb; border: 2px solid #002878; border-radius: 4px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); overflow: hidden; padding: 0;">
             <div style="background: #002878; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.85rem;">
                 <span id="quick-master-title">Add New Profile</span>
@@ -2340,7 +2339,7 @@
         </div>
 
         <!-- General Password Verification Modal -->
-        <div id="password-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px); z-index: 10000;"></div>
+        <div id="password-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 10000;"></div>
         <div id="password-challenge-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width: 360px; background: #f0f0eb; border: 2px solid #002878; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; padding: 0;">
             <div style="background: #002878; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.85rem;">
                 <span>🔒 Admin Verification</span>
@@ -2364,7 +2363,7 @@
         </div>
 
         <!-- Sale Stock Picker Modal -->
-        <div id="stock-picker-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.2); backdrop-filter:blur(4px); z-index:5000;"></div>
+        <div id="stock-picker-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:5000;"></div>
         <div id="stock-picker-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:5001; width:500px; max-height:80vh; background:#f0f0eb; border:2px solid #002878; border-radius:4px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:0; overflow:hidden;">
             <div style="background:#002878; color:white; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:0.9rem;">
                 <span>Select Stock for Sale Entry</span>
@@ -2392,7 +2391,7 @@
         </div>
 
         <!-- Invoice Slip View Page -->
-        <section id="view-slip" class="app-view">
+        <section id="view-slip" class="app-view scrollable-view">
             <div class="glass-card" style="max-width: 600px; margin: 30px auto; padding: 25px; display: flex; flex-direction: column; gap: 20px;">
                 <h2 style="margin-bottom: 15px; color: #002878; text-align: center; border-bottom: 1.5px solid rgba(0,0,0,0.1); padding-bottom: 10px;">📄 Invoice Transaction Slip</h2>
                 
@@ -2427,7 +2426,7 @@
         </section>
 
         <!-- Diamond Assortment Desk View Page -->
-        <section id="view-assortment" class="app-view">
+        <section id="view-assortment" class="app-view scrollable-view">
             <div class="glass-card" style="margin: 10px auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
                 <h2 style="margin-bottom: 10px; color: #002878; text-align: center; border-bottom: 1.5px solid rgba(0,0,0,0.1); padding-bottom: 10px;">💎 Diamond Assortment Desk</h2>
                 
@@ -2669,7 +2668,7 @@
         </section>
 
         <!-- WhatsApp Broadcast Section -->
-        <section id="view-whatsapp" class="app-view">
+        <section id="view-whatsapp" class="app-view scrollable-view">
             <div class="glass-card" style="max-width: 900px; margin: 20px auto; padding: 25px;">
                 <div class="erp-sidebar-header" style="margin-bottom: 15px; background: linear-gradient(90deg, #1e272e, #485460); color: white; padding: 8px 12px; border-radius: 4px; font-weight: bold;">
                     <span>💬 AUTOMATED WHATSAPP BROADCAST ENGINE</span>
@@ -2734,7 +2733,7 @@
         </section>
 
         <!-- System Settings Section -->
-        <section id="view-settings" class="app-view">
+        <section id="view-settings" class="app-view scrollable-view">
             <div style="max-width: 1100px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px;">
                 
                 <!-- Side-by-Side Grid for Profile and Backup -->
@@ -5836,7 +5835,7 @@
                         totalCaratsAccum += data.carats;
                         totalValueAccum += data.totalVal;
                         html += `
-                            <td style="text-align: right; border-left: 2px solid var(--glass-border);">${data.carats > 0 ? data.carats.toFixed(2) : '-'}</td>
+                            <td style="text-align: right; border-left: 2px solid var(--border);">${data.carats > 0 ? data.carats.toFixed(2) : '-'}</td>
                             <td style="text-align: right;">${data.carats > 0 ? '₹' + Math.round(data.avgRate).toLocaleString('en-IN') : '-'}</td>
                             <td style="text-align: right; font-weight: 700;">${data.carats > 0 ? '₹' + Math.round(data.totalVal).toLocaleString('en-IN') : '-'}</td>
                         `;
@@ -7672,20 +7671,20 @@
 
     <!-- Real-time SVG Analytics Side Drawer -->
     <div id="analytics-side-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--glass-border); padding-bottom:10px; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;">
             <h3 style="margin:0; font-size:1.1rem; color:#002878; font-weight:700;">📊 REAL-TIME ANALYTICS</h3>
             <button onclick="toggleAnalyticsDrawer()" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:#002878; font-weight:bold;">✖</button>
         </div>
         <div style="flex-grow:1; overflow-y:auto; display:flex; flex-direction:column; gap:20px;">
             <div>
                 <h4 style="font-size:0.75rem; text-transform:uppercase; margin-bottom:8px; color:var(--text-muted); font-weight:bold; letter-spacing:0.5px;">Purchase Volume by Shade (Cts)</h4>
-                <div id="chart-a-container" style="background:rgba(255,255,255,0.4); border-radius:8px; padding:10px; border:1px solid var(--glass-border); min-height:220px; display:flex; align-items:center; justify-content:center;">
+                <div id="chart-a-container" style="background:#ffffff; border-radius:4px; padding:10px; border:1px solid var(--border); min-height:220px; display:flex; align-items:center; justify-content:center;">
                     <!-- SVG Chart A -->
                 </div>
             </div>
             <div>
                 <h4 style="font-size:0.75rem; text-transform:uppercase; margin-bottom:8px; color:var(--text-muted); font-weight:bold; letter-spacing:0.5px;">Sales Margin Distribution</h4>
-                <div id="chart-b-container" style="background:rgba(255,255,255,0.4); border-radius:8px; padding:10px; border:1px solid var(--glass-border); min-height:220px; display:flex; align-items:center; justify-content:center;">
+                <div id="chart-b-container" style="background:#ffffff; border-radius:4px; padding:10px; border:1px solid var(--border); min-height:220px; display:flex; align-items:center; justify-content:center;">
                     <!-- SVG Chart B -->
                 </div>
             </div>
@@ -7694,7 +7693,7 @@
     <button class="analytics-toggle-btn" id="analytics-toggle-btn" onclick="toggleAnalyticsDrawer()">📊 ANALYTICS</button>
 
     <!-- Custom Dialog Modal Overlay -->
-    <div id="custom-dialog-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 15000; justify-content: center; align-items: center; transition: all 0.2s ease;">
+    <div id="custom-dialog-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.45); z-index: 15000; justify-content: center; align-items: center; transition: all 0.2s ease;">
         <div id="custom-dialog-modal" style="background: #f0f0eb; border: 2px solid #002878; border-radius: 4px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); width: 400px; display: flex; flex-direction: column; overflow: hidden; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; position: relative;">
             <div style="background: #002878; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.85rem;">
                 <span style="display: flex; align-items: center; gap: 6px;">
