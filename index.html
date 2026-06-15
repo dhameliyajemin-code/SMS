@@ -436,6 +436,23 @@
             color: #053ca6;
         }
 
+        .dashboard-shortcut-btn {
+            background: #fdfdfb;
+            border: 1px solid #b0b0a8;
+            border-radius: 4px;
+            padding: 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .dashboard-shortcut-btn:hover {
+            background: #f5f5f0 !important;
+            border-color: #002878 !important;
+            box-shadow: 0 4px 8px rgba(0, 40, 120, 0.1);
+            transform: translateY(-2px);
+        }
+
         h2 {
             font-size: 1.25rem;
             font-weight: 700;
@@ -1229,9 +1246,83 @@
             <!-- Main App Container -->
             <main id="app-container">
 
-        <section id="view-blank" class="app-view active-view">
-            <div style="height: calc(100vh - 45px); background: #fdfdfb; display: flex; align-items: center; justify-content: center; color: #b0b0a8; font-size: 1.25rem; font-weight: bold; font-family: monospace; letter-spacing: 1.5px; user-select: none;">
-                SMS ERP - SYSTEM READY
+        <section id="view-blank" class="app-view active-view" style="height: calc(100vh - 40px); overflow-y: auto; background: #f4f4f0;">
+            <div style="padding: 20px; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+                
+                <!-- Welcome Banner -->
+                <div style="background: linear-gradient(90deg, #002878, #004080); color: white; padding: 15px 20px; border-radius: 4px; border: 1px solid #002878; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.4rem; font-weight: bold; color: white; letter-spacing: 0.5px;">SMS ERP DASHBOARD</h2>
+                        <p style="margin: 4px 0 0 0; font-size: 0.8rem; opacity: 0.85;">Welcome back! System is ready for operations.</p>
+                    </div>
+                    <div style="font-family: monospace; font-size: 0.9rem; font-weight: bold; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 3px;">
+                        SYSTEM READY
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Grid -->
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+                    
+                    <!-- Left Grid Column: Shortcut Cards -->
+                    <div class="glass-card" style="margin: 0; padding: 20px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #b0b0a8; background: #ffffff; border-radius: 4px;">
+                        <div style="font-weight: bold; font-size: 1rem; color: #002878; border-bottom: 2px solid #002878; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <span>⚡ QUICK SHORTCUT PANEL</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            
+                            <button onclick="switchView('view-purchase')" class="dashboard-shortcut-btn">
+                                <div style="font-size: 1.5rem; margin-bottom: 6px;">🛍️</div>
+                                <div style="font-weight: bold; font-size: 0.85rem; color: #002878; font-family: 'Segoe UI', sans-serif;">POLISH PURCHASE</div>
+                                <div style="font-size: 0.72rem; color: #666; margin-top: 4px; font-family: 'Segoe UI', sans-serif;">Purchase Invoice Entry (F3)</div>
+                            </button>
+
+                            <button onclick="switchView('view-sale')" class="dashboard-shortcut-btn">
+                                <div style="font-size: 1.5rem; margin-bottom: 6px;">💸</div>
+                                <div style="font-weight: bold; font-size: 0.85rem; color: #002878; font-family: 'Segoe UI', sans-serif;">POLISH SELL</div>
+                                <div style="font-size: 0.72rem; color: #666; margin-top: 4px; font-family: 'Segoe UI', sans-serif;">Polish Sale Entry (F4)</div>
+                            </button>
+
+                            <button onclick="switchView('view-stock')" class="dashboard-shortcut-btn">
+                                <div style="font-size: 1.5rem; margin-bottom: 6px;">📦</div>
+                                <div style="font-weight: bold; font-size: 0.85rem; color: #002878; font-family: 'Segoe UI', sans-serif;">CURRENT STOCK</div>
+                                <div style="font-size: 0.72rem; color: #666; margin-top: 4px; font-family: 'Segoe UI', sans-serif;">Tijori Live Balances (F9)</div>
+                            </button>
+
+                            <button onclick="switchView('view-assortment')" class="dashboard-shortcut-btn">
+                                <div style="font-size: 1.5rem; margin-bottom: 6px;">🔍</div>
+                                <div style="font-weight: bold; font-size: 0.85rem; color: #002878; font-family: 'Segoe UI', sans-serif;">ASSORTMENT</div>
+                                <div style="font-size: 0.72rem; color: #666; margin-top: 4px; font-family: 'Segoe UI', sans-serif;">Process Polish Assortment</div>
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <!-- Right Grid Column: Analytics Charts -->
+                    <div class="glass-card" style="margin: 0; padding: 20px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #b0b0a8; background: #ffffff; border-radius: 4px;">
+                        <div style="font-weight: bold; font-size: 1rem; color: #002878; border-bottom: 2px solid #002878; padding-bottom: 8px;">
+                            <span>📊 SYSTEM ANALYTICS</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 20px; overflow-y: auto; max-height: 480px; padding-right: 5px;">
+                            
+                            <div>
+                                <h4 style="font-size:0.75rem; text-transform:uppercase; margin-bottom:8px; color:var(--text-muted); font-weight:bold; letter-spacing:0.5px;">Purchase Volume by Shade (Cts)</h4>
+                                <div id="dashboard-chart-a" style="background:#fdfdfb; border-radius:4px; padding:10px; border:1px solid #b0b0a8; min-height:200px; display:flex; align-items:center; justify-content:center;">
+                                    <!-- Dynamic SVG Chart A -->
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 style="font-size:0.75rem; text-transform:uppercase; margin-bottom:8px; color:var(--text-muted); font-weight:bold; letter-spacing:0.5px;">Sales Margin Distribution</h4>
+                                <div id="dashboard-chart-b" style="background:#fdfdfb; border-radius:4px; padding:10px; border:1px solid #b0b0a8; min-height:200px; display:flex; align-items:center; justify-content:center;">
+                                    <!-- Dynamic SVG Chart B -->
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
         </section>
 
@@ -1630,7 +1721,7 @@
 
                         <div style="background: white; border: 1px solid #b0b0a8; padding: 10px; border-radius: 4px;">
                             <div style="font-size: 0.72rem; color: #666; font-weight: bold; text-transform: uppercase;">Sieve Groups</div>
-                            <div style="font-size: 0.78rem; font-weight: bold; margin-top: 3px; color: #333;">-2 / +2 / MIX</div>
+                            <div id="stock-sieve-groups" style="font-size: 0.78rem; font-weight: bold; margin-top: 3px; color: #333;">-2 / +2 / MIX</div>
                         </div>
                     </div>
                 </div>
@@ -1643,7 +1734,7 @@
                     <!-- Main On-Hand Spreadsheet Table -->
                     <div style="flex-grow: 1; overflow: auto; background: white; border: 1px solid #b0b0a8;">
                         <table class="erp-sheet-table">
-                            <thead style="position: sticky; top: 0; background: #e0e0d8; z-index: 10;">
+                            <thead id="stock-ledger-thead" style="position: sticky; top: 0; background: #e0e0d8; z-index: 10;">
                                 <tr>
                                     <th rowspan="2" style="vertical-align: middle; padding: 6px; border: 1px solid #b0b0a8;">Clarity / Purity Group</th>
                                     <th colspan="3" style="text-align: center; border: 1px solid #b0b0a8; background: #002878; color: white;">(-2) Sieve</th>
@@ -1672,24 +1763,24 @@
         <section id="view-purity-master" class="app-view">
             <div class="erp-right-form" style="height: calc(100vh - 45px); padding: 4px;">
                 <div class="erp-sidebar-header" style="margin-bottom: 4px;">
-                    <span>PURITY MASTER CONFIGURATION</span>
+                    <span>SHADE MASTER CONFIGURATION</span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-grow: 1;">
                     <div style="background: #f0f0eb; border: 1px solid #b0b0a8; padding: 12px;">
-                        <span style="font-weight: bold; font-size: 0.82rem; color: #002878; display: block; border-bottom: 1px solid #b0b0a8; padding-bottom: 4px; margin-bottom: 12px;">ADD NEW PURITY</span>
+                        <span style="font-weight: bold; font-size: 0.82rem; color: #002878; display: block; border-bottom: 1px solid #b0b0a8; padding-bottom: 4px; margin-bottom: 12px;">ADD NEW SHADE</span>
                         <div class="erp-param-group" style="margin-bottom: 12px;">
-                            <label>Purity Name / Code</label>
-                            <input type="text" id="new-purity-name" placeholder="e.g. WH1, NW1" style="border: 1px solid #b0b0a8; padding: 4px 6px; font-size: 0.8rem; background: white; outline: none; width: 100%;">
+                            <label>Shade Name / Code</label>
+                            <input type="text" id="new-shade-name" placeholder="e.g. White, BLC, Fancy Group" style="border: 1px solid #b0b0a8; padding: 4px 6px; font-size: 0.8rem; background: white; outline: none; width: 100%;">
                         </div>
-                        <button class="erp-btn" style="background: #002878; color: white;" onclick="addMasterItem('purity')">Save Purity</button>
+                        <button class="erp-btn" style="background: #002878; color: white;" onclick="addMasterItem('shade')">Save Shade</button>
                         <div style="border-top:1px solid #b0b0a8; margin:12px 0 8px;"></div>
-                        <span style="font-weight: bold; font-size: 0.82rem; color: #e74c3c; display: block; border-bottom: 1px solid #e74c3c; padding-bottom: 4px; margin-bottom: 8px;">DELETE PURITY</span>
-                        <select id="delete-purity" style="width:100%; padding:4px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8;"></select>
-                        <button class="erp-btn" style="background:#e74c3c; color:white; width:100%;" onclick="deleteMasterItem('purity')">Delete Selected</button>
+                        <span style="font-weight: bold; font-size: 0.82rem; color: #e74c3c; display: block; border-bottom: 1px solid #e74c3c; padding-bottom: 4px; margin-bottom: 8px;">DELETE SHADE</span>
+                        <select id="delete-shade" style="width:100%; padding:4px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8;"></select>
+                        <button class="erp-btn" style="background:#e74c3c; color:white; width:100%;" onclick="deleteMasterItem('shade')">Delete Selected</button>
                     </div>
                     <div style="background: white; border: 1px solid #b0b0a8; padding: 12px; overflow-y: auto;">
-                        <span style="font-weight: bold; font-size: 0.82rem; color: #002878; display: block; border-bottom: 1px solid #b0b0a8; padding-bottom: 4px; margin-bottom: 12px;">REGISTERED PURITIES</span>
-                        <ul id="master-purity-list" style="list-style: none; line-height: 2; font-size: 0.85rem; color: #333;"></ul>
+                        <span style="font-weight: bold; font-size: 0.82rem; color: #002878; display: block; border-bottom: 1px solid #b0b0a8; padding-bottom: 4px; margin-bottom: 12px;">REGISTERED SHADES</span>
+                        <ul id="master-shade-list" style="list-style: none; line-height: 2; font-size: 0.85rem; color: #333;"></ul>
                     </div>
                 </div>
             </div>
@@ -2231,40 +2322,50 @@
 
         <!-- Centered Quick Master Modal overlay dialog -->
         <div id="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.15); backdrop-filter: blur(5px); z-index: 1999;" onclick="closeQuickMasterModal()"></div>
-        <div id="quick-master-modal" class="glass-card" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; width: 400px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
-            <h3 id="quick-master-title">Add New Profile</h3>
-            <div class="input-group" style="margin-top: 15px; margin-bottom: 20px;">
-                <label id="quick-master-label">Name</label>
-                <input type="text" id="quick-master-input" placeholder="Enter name...">
+        <div id="quick-master-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; width: 400px; background: #f0f0eb; border: 2px solid #002878; border-radius: 4px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); overflow: hidden; padding: 0;">
+            <div style="background: #002878; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.85rem;">
+                <span id="quick-master-title">Add New Profile</span>
+                <span onclick="closeQuickMasterModal()" style="cursor: pointer; font-size: 1.1rem; font-weight: bold;">✖</span>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button type="button" class="btn" style="background: rgba(255,255,255,0.4); color: var(--text-main);" onclick="closeQuickMasterModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveQuickMasterItem()">Save (Enter)</button>
+            <div style="padding: 20px;">
+                <div class="input-group" style="margin-bottom: 20px;">
+                    <label id="quick-master-label" style="font-size: 0.85rem; font-weight: bold; color: var(--text-main); margin-bottom: 6px; display: block;">Name</label>
+                    <input type="text" id="quick-master-input" placeholder="Enter name..." style="width: 100%; padding: 6px 10px; border: 1px solid #b0b0a8; border-radius: 4px; font-size: 0.85rem; outline: none; background: white;">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="erp-btn" style="background: rgba(0,0,0,0.05); border: 1px solid #b0b0a8;" onclick="closeQuickMasterModal()">Cancel</button>
+                    <button type="button" class="erp-btn" style="background: #002878; color: white;" onclick="saveQuickMasterItem()">Save (Enter)</button>
+                </div>
             </div>
         </div>
 
         <!-- General Password Verification Modal -->
         <div id="password-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px); z-index: 10000;"></div>
-        <div id="password-challenge-modal" class="glass-card" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width: 360px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.9); border-radius: 12px;">
-            <h3 style="margin-top: 0; font-size: 1.1rem; color: #002878; display: flex; align-items: center; gap: 6px;">🔒 Admin Verification</h3>
-            <p id="password-challenge-msg" style="font-size: 0.78rem; color: #555; margin-bottom: 15px;">Please enter the administrator password to proceed.</p>
-            <div class="input-group" style="margin-bottom: 20px; position: relative;">
-                <label style="font-size: 0.72rem; font-weight: bold; color: #555;">Admin Password</label>
-                <div class="pass-wrap" style="display: flex; align-items: center; position: relative; margin-top: 4px;">
-                    <input type="password" id="challenge-password-input" placeholder="Enter password" style="width: 100%; padding: 8px 36px 8px 10px; border: 1px solid #b0b0a8; border-radius: 6px; font-size: 0.9rem; outline: none; background: white;">
-                    <button class="peye" onclick="togglePassVis('challenge-password-input', this)" type="button" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #607d8b; padding: 0;">👁️</button>
-                </div>
-                <div id="challenge-password-error" style="color: red; font-size: 0.75rem; margin-top: 5px; min-height: 15px;"></div>
+        <div id="password-challenge-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width: 360px; background: #f0f0eb; border: 2px solid #002878; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; padding: 0;">
+            <div style="background: #002878; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.85rem;">
+                <span>🔒 Admin Verification</span>
+                <span onclick="cancelPasswordChallenge()" style="cursor: pointer; font-size: 1.1rem; font-weight: bold;">✖</span>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button type="button" class="erp-btn" onclick="cancelPasswordChallenge()" style="background: rgba(0,0,0,0.05); border: 1px solid #b0b0a8;">Cancel</button>
-                <button type="button" class="erp-btn" id="challenge-confirm-btn" style="background: #002878; color: white;" onclick="submitPasswordChallenge()">Verify</button>
+            <div style="padding: 20px;">
+                <p id="password-challenge-msg" style="font-size: 0.78rem; color: #555; margin-bottom: 15px;">Please enter the administrator password to proceed.</p>
+                <div class="input-group" style="margin-bottom: 15px; position: relative;">
+                    <label style="font-size: 0.72rem; font-weight: bold; color: #555;">Admin Password</label>
+                    <div class="pass-wrap" style="display: flex; align-items: center; position: relative; margin-top: 4px;">
+                        <input type="password" id="challenge-password-input" placeholder="Enter password" style="width: 100%; padding: 6px 36px 6px 10px; border: 1px solid #b0b0a8; border-radius: 4px; font-size: 0.85rem; outline: none; background: white;">
+                        <button class="peye" onclick="togglePassVis('challenge-password-input', this)" type="button" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #607d8b; padding: 0;">👁️</button>
+                    </div>
+                    <div id="challenge-password-error" style="color: red; font-size: 0.75rem; margin-top: 5px; min-height: 15px;"></div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="erp-btn" onclick="cancelPasswordChallenge()" style="background: rgba(0,0,0,0.05); border: 1px solid #b0b0a8;">Cancel</button>
+                    <button type="button" class="erp-btn" id="challenge-confirm-btn" style="background: #002878; color: white;" onclick="submitPasswordChallenge()">Verify</button>
+                </div>
             </div>
         </div>
 
         <!-- Sale Stock Picker Modal -->
         <div id="stock-picker-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.2); backdrop-filter:blur(4px); z-index:5000;"></div>
-        <div id="stock-picker-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:5001; width:500px; max-height:80vh; background:#f0f0eb; border:2px solid #002878; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:0; overflow:hidden;">
+        <div id="stock-picker-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:5001; width:500px; max-height:80vh; background:#f0f0eb; border:2px solid #002878; border-radius:4px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:0; overflow:hidden;">
             <div style="background:#002878; color:white; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:0.9rem;">
                 <span>Select Stock for Sale Entry</span>
                 <span onclick="closeStockPicker()" style="cursor:pointer; font-size:1.3rem; font-weight:bold;">✖</span>
@@ -2731,6 +2832,7 @@
                             <tr style="background: rgba(0, 40, 120, 0.05); text-align: left;">
                                 <th style="padding: 10px; border: 1px solid var(--border); font-size: 0.85rem;">Action</th>
                                 <th style="padding: 10px; border: 1px solid var(--border); font-size: 0.85rem;">Shortcut Key Combination</th>
+                                <th style="padding: 10px; border: 1px solid var(--border); font-size: 0.85rem; text-align: center; width: 100px;">Active</th>
                             </tr>
                         </thead>
                         <tbody id="settings-shortcuts-body">
@@ -3078,14 +3180,42 @@
                 if (lastManualBackup) ERP_STATE.lastManualBackupTime = parseInt(lastManualBackup);
 
                 // Load custom keyboard shortcuts
+                const DEFAULT_SHORTCUTS = {
+                    "Add New": { key: "n", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+N", active: true },
+                    "Save Invoice": { key: "s", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+S", active: true },
+                    "Open P.PURCHASE": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-purchase" },
+                    "Open P.SELL": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-sale" },
+                    "Open CURRENT STOCK": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-stock" },
+                    "Open SERIES OPENING": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-opening" },
+                    "Open ASSORTMENT": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-assortment" },
+                    "Open MIX TRANSFER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-mix" },
+                    "Open OUT STANDING": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-payment-ir" },
+                    "Open ROJMEL LEDGER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-rojmel" },
+                    "Open REPORT MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-reports" },
+                    "Open WHATSAPP": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-whatsapp" },
+                    "Open SHADE MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-purity-master" },
+                    "Open NUMBER MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-number-master" },
+                    "Open SIZE MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-size-master" },
+                    "Open PARTY MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-party-master" },
+                    "Open BROKER MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-broker-master" },
+                    "Open SETTINGS": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-settings" }
+                };
+
                 const localShortcuts = localStorage.getItem('sms_settings_shortcuts');
+                ERP_STATE.shortcuts = Object.assign({}, DEFAULT_SHORTCUTS);
                 if (localShortcuts) {
-                    ERP_STATE.shortcuts = JSON.parse(localShortcuts);
-                } else {
-                    ERP_STATE.shortcuts = {
-                        "Add New": { key: "n", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+N" },
-                        "Save Invoice": { key: "s", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+S" }
-                    };
+                    try {
+                        const parsed = JSON.parse(localShortcuts);
+                        Object.keys(parsed).forEach(k => {
+                            if (ERP_STATE.shortcuts[k]) {
+                                ERP_STATE.shortcuts[k] = Object.assign({}, ERP_STATE.shortcuts[k], parsed[k]);
+                            } else {
+                                ERP_STATE.shortcuts[k] = parsed[k];
+                            }
+                        });
+                    } catch(e) {
+                        console.error("Failed to parse shortcuts", e);
+                    }
                 }
             } catch (e) {
                 console.error("Failed to load database state from localStorage", e);
@@ -3130,7 +3260,7 @@
                 'view-rojmel': { tab: 'accounts', optText: 'ROJMEL LEDGER' },
                 'view-reports': { tab: 'polish-reports', optText: 'REPORT MASTER' },
                 'view-whatsapp': { tab: 'polish-reports', optText: 'WHATSAPP' },
-                'view-purity-master': { tab: 'param-master', optText: 'PURITY MASTER' },
+                'view-purity-master': { tab: 'param-master', optText: 'SHADE MASTER' },
                 'view-number-master': { tab: 'param-master', optText: 'NUMBER MASTER' },
                 'view-size-master': { tab: 'param-master', optText: 'SIZE MASTER' },
                 'view-party-master': { tab: 'masters', optText: 'PARTY MASTER' },
@@ -3156,6 +3286,9 @@
             }
             if (viewId === 'view-whatsapp') {
                 updateWhatsAppPreview();
+            }
+            if (viewId === 'view-blank') {
+                updateAnalyticsCharts();
             }
 
             // Focus date field for purchase/sale views only if logged in
@@ -3188,7 +3321,7 @@
                     { label: 'WHATSAPP', view: 'view-whatsapp', match: 'WHATSAPP' }
                 ],
                 'param-master': [
-                    { label: 'PURITY MASTER', view: 'view-purity-master', match: 'PURITY MASTER' },
+                    { label: 'SHADE MASTER', view: 'view-purity-master', match: 'SHADE MASTER' },
                     { label: 'NUMBER MASTER', view: 'view-number-master', match: 'NUMBER MASTER' },
                     { label: 'SIZE MASTER', view: 'view-size-master', match: 'SIZE MASTER' }
                 ],
@@ -3351,13 +3484,13 @@
             // Legacy IDs (to keep Mix transfer, etc. from breaking)
             bindSelect('pur-color', ERP_STATE.masters.colors, '-- Select Shade --');
             bindSelect('pur-size', ERP_STATE.masters.sizes, '-- Select Size --');
-            bindSelect('pur-clarity', ERP_STATE.masters.purities, '-- Select Purity --');
+            bindSelect('pur-clarity', ERP_STATE.masters.numbers, '-- Select Purity --');
             bindSelect('pur-party', ERP_STATE.masters.parties, '-- Select Party --', '+ Add New Party');
             bindSelect('pur-broker', ERP_STATE.masters.brokers, '-- Select Broker --', '+ Add New Broker');
 
             bindSelect('sale-color', ERP_STATE.masters.colors, '-- Select Shade --');
             bindSelect('sale-size', ERP_STATE.masters.sizes, '-- Select Size --');
-            bindSelect('sale-clarity', ERP_STATE.masters.purities, '-- Select Purity --');
+            bindSelect('sale-clarity', ERP_STATE.masters.numbers, '-- Select Purity --');
             bindSelect('sale-party', ERP_STATE.masters.parties, '-- Select Party --', '+ Add New Party');
             bindSelect('sale-broker', ERP_STATE.masters.brokers, '-- Select Broker --', '+ Add New Broker');
 
@@ -3373,7 +3506,7 @@
             // sale-sheet-shade/size/number are readonly inputs filled by stock picker
 
             // Opening Stock Series Wizard select inputs
-            bindSelect('opening-source-purity', ERP_STATE.masters.purities, '-- Select Source Purity --');
+            bindSelect('opening-source-purity', ERP_STATE.masters.numbers, '-- Select Source Purity --');
             const srcSelect = document.getElementById('opening-source-purity');
             if (srcSelect && !srcSelect.value) {
                 srcSelect.value = "RIPER";
@@ -3382,15 +3515,15 @@
 
             // Mix Engine Select inputs
             bindSelect('mix-src-color', ERP_STATE.masters.colors, '-- Select Shade --');
-            bindSelect('mix-src-purity', ERP_STATE.masters.purities, '-- Select Purity --');
+            bindSelect('mix-src-purity', ERP_STATE.masters.numbers, '-- Select Purity --');
             bindSelect('mix-dest-color', ERP_STATE.masters.colors, '-- Select Shade --');
-            bindSelect('mix-dest-purity', ERP_STATE.masters.purities, '-- Select Purity --');
+            bindSelect('mix-dest-purity', ERP_STATE.masters.numbers, '-- Select Purity --');
 
             // Report Filter selectors
             bindSelect('filter-party', ERP_STATE.masters.parties, 'Select Party');
             bindSelect('filter-broker', ERP_STATE.masters.brokers, 'Select Broker');
             bindSelect('filter-size', ERP_STATE.masters.sizes, 'Select Size');
-            bindSelect('filter-purity', ERP_STATE.masters.purities, 'Select Purity');
+            bindSelect('filter-purity', ERP_STATE.masters.numbers, 'Select Purity');
         }
 
         function updateMixSourceAvailable() {
@@ -4777,7 +4910,7 @@
 
             const refUl = document.getElementById('global-purity-reference-ul');
             if (refUl) {
-                refUl.innerHTML = ERP_STATE.masters.purities.map(purity => {
+                refUl.innerHTML = ERP_STATE.masters.numbers.map(purity => {
                     const isAdded = seriesPurities.includes(purity);
                     const btnStyle = isAdded ? 'background: #cbd5e1; color: #64748b; cursor: default; border-color: #cbd5e1;' : 'background: #eff6ff; color: #1e40af; border-color: #bfdbfe; cursor: pointer;';
                     const actionHtml = isAdded ? 'Added' : `<span style="font-weight: bold; font-size: 0.85rem; margin-right: 4px;">+</span> Add`;
@@ -5463,6 +5596,7 @@
             const val = document.getElementById(`new-${type}-name`).value.trim();
             if(!val) return;
             
+            if(type === 'shade') ERP_STATE.masters.colors.push(val);
             if(type === 'purity') ERP_STATE.masters.purities.push(val);
             if(type === 'number') ERP_STATE.masters.numbers.push(val);
             if(type === 'size') ERP_STATE.masters.sizes.push(val);
@@ -5481,7 +5615,7 @@
             const value = sel?.value;
             if (!value) return;
             showCustomConfirm('Delete Master Item', `Delete "${value}" from ${type} list?`, () => {
-                const arr = ERP_STATE.masters[type === 'purity' ? 'purities' : type === 'number' ? 'numbers' : type + 's'];
+                const arr = ERP_STATE.masters[type === 'shade' ? 'colors' : type === 'purity' ? 'purities' : type === 'number' ? 'numbers' : type + 's'];
                 const idx = arr.indexOf(value);
                 if (idx === -1) return;
                 arr.splice(idx, 1);
@@ -5540,78 +5674,91 @@
             const body = document.getElementById('stock-ledger-table');
             if (!body) return;
 
+            const thead = document.getElementById('stock-ledger-thead');
+            const sizes = ERP_STATE.masters.sizes;
+            const numbers = ERP_STATE.masters.numbers;
+
+            // Render dynamic table headers
+            if (thead) {
+                let theadHtml = `
+                    <tr>
+                        <th rowspan="2" style="vertical-align: middle; padding: 6px; border: 1px solid #b0b0a8;">Clarity / Purity Group</th>
+                `;
+                sizes.forEach(size => {
+                    theadHtml += `<th colspan="3" style="text-align: center; border: 1px solid #b0b0a8; background: #002878; color: white;">(${size}) Sieve</th>`;
+                });
+                theadHtml += `</tr><tr>`;
+                sizes.forEach(size => {
+                    theadHtml += `
+                        <th style="text-align: right; border: 1px solid #b0b0a8; padding: 4px; width: 100px;">Carats</th>
+                        <th style="text-align: right; border: 1px solid #b0b0a8; padding: 4px; width: 110px;">Avg Rate</th>
+                        <th style="text-align: right; border: 1px solid #b0b0a8; padding: 4px; width: 130px;">Total Value</th>
+                    `;
+                });
+                theadHtml += `</tr>`;
+                thead.innerHTML = theadHtml;
+            }
+
             const fColor = document.getElementById('stock-filter-color') ? document.getElementById('stock-filter-color').value.toLowerCase() : "";
             const fPurity = document.getElementById('stock-filter-purity') ? document.getElementById('stock-filter-purity').value.toLowerCase() : "";
-
-            const purities = ERP_STATE.masters.purities;
 
             let totalCaratsAccum = 0;
             let totalValueAccum = 0;
             let html = "";
 
-            purities.forEach(purity => {
-                if (fPurity && !purity.toLowerCase().includes(fPurity)) return;
+            numbers.forEach(number => {
+                if (fPurity && !number.toLowerCase().includes(fPurity)) return;
 
-                // Aggregates for -2
-                let caratsM2 = 0;
-                for (const [key, carats] of Object.entries(ERP_STATE.stock)) {
-                    const [col, sz, pur] = key.split('||');
-                    const cleanSz = sz.replace(/ Sieve| size/gi, '').trim();
-                    if (cleanSz === '-2' && pur === purity) {
-                        if (fColor && !col.toLowerCase().includes(fColor)) continue;
-                        caratsM2 += carats;
+                const rowSizesData = [];
+                let rowHasStock = false;
+
+                sizes.forEach(size => {
+                    let carats = 0;
+                    for (const [key, qty] of Object.entries(ERP_STATE.stock)) {
+                        const [col, sz, pur] = key.split('||');
+                        const cleanSz = sz.replace(/ Sieve| size/gi, '').trim();
+                        const targetCleanSz = size.replace(/ Sieve| size/gi, '').trim();
+                        if (cleanSz === targetCleanSz && pur === number) {
+                            if (fColor && !col.toLowerCase().includes(fColor)) continue;
+                            carats += qty;
+                        }
                     }
-                }
-                const avgRateM2 = getAveragePurchaseRate('-2', purity);
-                const totalValM2 = caratsM2 * avgRateM2;
 
-                // Aggregates for +2
-                let caratsP2 = 0;
-                for (const [key, carats] of Object.entries(ERP_STATE.stock)) {
-                    const [col, sz, pur] = key.split('||');
-                    const cleanSz = sz.replace(/ Sieve| size/gi, '').trim();
-                    if (cleanSz === '+2' && pur === purity) {
-                        if (fColor && !col.toLowerCase().includes(fColor)) continue;
-                        caratsP2 += carats;
+                    let avgRate = 0;
+                    if (size === 'MIX') {
+                        avgRate = getWeightedAveragePurchaseRate(number, 'MIX', 'White') || getAveragePurchaseRate('MIX', number);
+                    } else {
+                        avgRate = getAveragePurchaseRate(size, number);
                     }
-                }
-                const avgRateP2 = getAveragePurchaseRate('+2', purity);
-                const totalValP2 = caratsP2 * avgRateP2;
+                    const totalVal = carats * avgRate;
 
-                // Aggregates for MIX
-                let caratsMix = 0;
-                for (const [key, carats] of Object.entries(ERP_STATE.stock)) {
-                    const [col, sz, pur] = key.split('||');
-                    if (sz === 'MIX' && pur === purity) {
-                        if (fColor && !col.toLowerCase().includes(fColor)) continue;
-                        caratsMix += carats;
+                    if (carats > 0) {
+                        rowHasStock = true;
                     }
-                }
-                const avgRateMix = getWeightedAveragePurchaseRate(purity, 'MIX', 'White') || getAveragePurchaseRate('MIX', purity);
-                const totalValMix = caratsMix * avgRateMix;
 
-                if (caratsM2 > 0 || caratsP2 > 0 || caratsMix > 0) {
-                    totalCaratsAccum += (caratsM2 + caratsP2 + caratsMix);
-                    totalValueAccum += (totalValM2 + totalValP2 + totalValMix);
+                    rowSizesData.push({ carats, avgRate, totalVal });
+                });
 
+                if (rowHasStock) {
                     html += `
                         <tr>
-                            <td><span style="background:rgba(0,0,0,0.04); padding:3px 8px; border-radius:4px; font-weight:600;">${purity}</span></td>
-                            <td style="text-align: right; border-left: 2px solid var(--glass-border);">${caratsM2 > 0 ? caratsM2.toFixed(2) : '-'}</td>
-                            <td style="text-align: right;">${caratsM2 > 0 ? '₹' + Math.round(avgRateM2).toLocaleString('en-IN') : '-'}</td>
-                            <td style="text-align: right; font-weight: 700;">${caratsM2 > 0 ? '₹' + Math.round(totalValM2).toLocaleString('en-IN') : '-'}</td>
-                            <td style="text-align: right; border-left: 2px solid var(--glass-border);">${caratsP2 > 0 ? caratsP2.toFixed(2) : '-'}</td>
-                            <td style="text-align: right;">${caratsP2 > 0 ? '₹' + Math.round(avgRateP2).toLocaleString('en-IN') : '-'}</td>
-                            <td style="text-align: right; font-weight: 700;">${caratsP2 > 0 ? '₹' + Math.round(totalValP2).toLocaleString('en-IN') : '-'}</td>
-                            <td style="text-align: right; border-left: 2px solid var(--glass-border);">${caratsMix > 0 ? caratsMix.toFixed(2) : '-'}</td>
-                            <td style="text-align: right;">${caratsMix > 0 ? '₹' + Math.round(avgRateMix).toLocaleString('en-IN') : '-'}</td>
-                            <td style="text-align: right; font-weight: 700;">${caratsMix > 0 ? '₹' + Math.round(totalValMix).toLocaleString('en-IN') : '-'}</td>
-                        </tr>
+                            <td><span style="background:rgba(0,0,0,0.04); padding:3px 8px; border-radius:4px; font-weight:600;">${number}</span></td>
                     `;
+                    rowSizesData.forEach(data => {
+                        totalCaratsAccum += data.carats;
+                        totalValueAccum += data.totalVal;
+                        html += `
+                            <td style="text-align: right; border-left: 2px solid var(--glass-border);">${data.carats > 0 ? data.carats.toFixed(2) : '-'}</td>
+                            <td style="text-align: right;">${data.carats > 0 ? '₹' + Math.round(data.avgRate).toLocaleString('en-IN') : '-'}</td>
+                            <td style="text-align: right; font-weight: 700;">${data.carats > 0 ? '₹' + Math.round(data.totalVal).toLocaleString('en-IN') : '-'}</td>
+                        `;
+                    });
+                    html += `</tr>`;
                 }
             });
 
-            body.innerHTML = html || `<tr><td colspan="10" style="text-align:center; color:var(--text-muted);">No Tijori balances match active filters.</td></tr>`;
+            const colCount = 1 + (sizes.length * 3);
+            body.innerHTML = html || `<tr><td colspan="${colCount}" style="text-align:center; color:var(--text-muted);">No Tijori balances match active filters.</td></tr>`;
             
             // Update dashboard metric cards
             if (document.getElementById('dash-total-carats')) {
@@ -5620,8 +5767,9 @@
             if (document.getElementById('dash-total-value')) {
                 document.getElementById('dash-total-value').innerText = `₹${Math.round(totalValueAccum).toLocaleString('en-IN')}`;
             }
-
-
+            if (document.getElementById('stock-sieve-groups')) {
+                document.getElementById('stock-sieve-groups').innerText = sizes.join(' / ');
+            }
         }
 
         // Inline Modal Overlay Quick Vault Handlers
@@ -5974,28 +6122,34 @@
             }
 
             // Global custom keyboard shortcuts
-            if (ERP_STATE.shortcuts) {
-                const activeView = document.querySelector('.app-view.active-view');
-                if (activeView && (activeView.id === 'view-purchase' || activeView.id === 'view-sale')) {
-                    const type = activeView.id === 'view-purchase' ? 'pur' : 'sale';
+            if (ERP_STATE.isLoggedIn && ERP_STATE.shortcuts) {
+                for (const action in ERP_STATE.shortcuts) {
+                    const s = ERP_STATE.shortcuts[action];
+                    if (!s.key || s.active === false) continue;
                     
-                    for (const action in ERP_STATE.shortcuts) {
-                        const s = ERP_STATE.shortcuts[action];
-                        const keyMatch = e.key.toLowerCase() === s.key;
-                        const altMatch = !!e.altKey === !!s.altKey;
-                        const ctrlMatch = !!e.ctrlKey === !!s.ctrlKey;
-                        const shiftMatch = !!e.shiftKey === !!s.shiftKey;
+                    const keyMatch = e.key.toLowerCase() === s.key;
+                    const altMatch = !!e.altKey === !!s.altKey;
+                    const ctrlMatch = !!e.ctrlKey === !!s.ctrlKey;
+                    const shiftMatch = !!e.shiftKey === !!s.shiftKey;
+                    
+                    if (keyMatch && altMatch && ctrlMatch && shiftMatch) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         
-                        if (keyMatch && altMatch && ctrlMatch && shiftMatch) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (action === 'Add New') {
-                                actionAddNew(type);
-                            } else if (action === 'Save Invoice') {
-                                actionSaveInvoice(type);
+                        if (action.startsWith("Open ") && s.view) {
+                            switchView(s.view);
+                        } else {
+                            const activeView = document.querySelector('.app-view.active-view');
+                            if (activeView && (activeView.id === 'view-purchase' || activeView.id === 'view-sale')) {
+                                const type = activeView.id === 'view-purchase' ? 'pur' : 'sale';
+                                if (action === 'Add New') {
+                                    actionAddNew(type);
+                                } else if (action === 'Save Invoice') {
+                                    actionSaveInvoice(type);
+                                }
                             }
-                            return;
                         }
+                        return;
                     }
                 }
             }
@@ -6014,6 +6168,13 @@
             }
 
             if (e.key === 'Enter') {
+                // Master Item Input direct save on Enter
+                if (id === 'new-shade-name' || id === 'new-purity-name') { e.preventDefault(); addMasterItem('shade'); return; }
+                if (id === 'new-number-name') { e.preventDefault(); addMasterItem('number'); return; }
+                if (id === 'new-size-name') { e.preventDefault(); addMasterItem('size'); return; }
+                if (id === 'new-party-name') { e.preventDefault(); addMasterItem('party'); return; }
+                if (id === 'new-broker-name') { e.preventDefault(); addMasterItem('broker'); return; }
+                if (id === 'quick-master-input') { e.preventDefault(); saveQuickMasterItem(); return; }
 
                 // Param grid input navigation for Purchase/Sale forms
                 if (id === 'pur-form-date') { e.preventDefault(); focusAndExpand('pur-form-inv-no'); return; }
@@ -6042,8 +6203,15 @@
                     e.preventDefault(); openStockPicker(); return;
                 }
 
-                // Sheet rate: go to note (no add yet)
+                // Sheet rate: go to discount
                 if (id === 'pur-sheet-rate') {
+                    e.preventDefault();
+                    const disc = document.getElementById('pur-sheet-disc');
+                    if (disc) disc.focus();
+                    return;
+                }
+                // Sheet discount: go to note/remark
+                if (id === 'pur-sheet-disc') {
                     e.preventDefault();
                     const note = document.getElementById('pur-sheet-remark');
                     if (note) note.focus();
@@ -6054,6 +6222,12 @@
                     e.preventDefault(); addSheetRow('pur'); return;
                 }
                 if (id === 'sale-sheet-rate') {
+                    e.preventDefault();
+                    const disc = document.getElementById('sale-sheet-disc');
+                    if (disc) disc.focus();
+                    return;
+                }
+                if (id === 'sale-sheet-disc') {
                     e.preventDefault();
                     const note = document.getElementById('sale-sheet-remark');
                     if (note) note.focus();
@@ -6134,16 +6308,22 @@
         }
 
         function renderMasterLists() {
-            document.getElementById('master-purity-list').innerHTML = ERP_STATE.masters.purities.map(i => `<li>• ${i}</li>`).join('');
+            if (document.getElementById('master-shade-list')) {
+                document.getElementById('master-shade-list').innerHTML = ERP_STATE.masters.colors.map(i => `<li>• ${i}</li>`).join('');
+            }
+            if (document.getElementById('master-purity-list')) {
+                document.getElementById('master-purity-list').innerHTML = ERP_STATE.masters.purities.map(i => `<li>• ${i}</li>`).join('');
+            }
             document.getElementById('master-number-list').innerHTML = ERP_STATE.masters.numbers.map(i => `<li>• ${i}</li>`).join('');
             document.getElementById('master-size-list').innerHTML = ERP_STATE.masters.sizes.map(i => `<li>• ${i}</li>`).join('');
             document.getElementById('master-party-list').innerHTML = ERP_STATE.masters.parties.map(i => `<li>• ${i}</li>`).join('');
             document.getElementById('master-broker-list').innerHTML = ERP_STATE.masters.brokers.map(i => `<li>• ${i}</li>`).join('');
             // Populate delete dropdowns
-            ['purity','number','size','party','broker'].forEach(type => {
+            ['shade','purity','number','size','party','broker'].forEach(type => {
                 const sel = document.getElementById(`delete-${type}`);
                 if (!sel) return;
                 const arr = ERP_STATE.masters[
+                    type === 'shade' ? 'colors' :
                     type === 'purity' ? 'purities' : 
                     type === 'number' ? 'numbers' : 
                     type === 'party' ? 'parties' : 
@@ -6946,10 +7126,7 @@
         function renderShortcutsTable() {
             const tbody = document.getElementById('settings-shortcuts-body');
             if (!tbody) return;
-            const shortcuts = ERP_STATE.shortcuts || {
-                "Add New": { key: "n", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+N" },
-                "Save Invoice": { key: "s", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+S" }
-            };
+            const shortcuts = ERP_STATE.shortcuts || {};
             tbody.innerHTML = Object.keys(shortcuts).map(action => {
                 const val = shortcuts[action];
                 return `
@@ -6958,11 +7135,45 @@
                         <td style="padding: 10px; border: 1px solid var(--border); cursor: pointer;" 
                             ondblclick="editShortcutCell(this, '${action}')" 
                             title="Double click to edit">
-                            <span class="shortcut-display-badge">${val.display}</span>
+                            ${val.display ? `
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="shortcut-display-badge">${val.display}</span>
+                                    <button onclick="event.stopPropagation(); clearShortcutKey('${action}')" 
+                                            style="background: #e74c3c; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 0.75rem; font-weight: bold; line-height: 1;" 
+                                            title="Clear shortcut">✖</button>
+                                </div>
+                            ` : `
+                                <span style="color: #999; font-style: italic; font-size: 0.8rem;">None (Double-click to set)</span>
+                            `}
+                        </td>
+                        <td style="padding: 10px; border: 1px solid var(--border); text-align: center;">
+                            <input type="checkbox" 
+                                   ${val.active !== false ? 'checked' : ''} 
+                                   onchange="toggleShortcutActive('${action}', this.checked)" 
+                                   style="width: 16px; height: 16px; cursor: pointer;">
                         </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        function toggleShortcutActive(action, isChecked) {
+            if (ERP_STATE.shortcuts && ERP_STATE.shortcuts[action]) {
+                ERP_STATE.shortcuts[action].active = isChecked;
+                localStorage.setItem('sms_settings_shortcuts', JSON.stringify(ERP_STATE.shortcuts));
+            }
+        }
+
+        function clearShortcutKey(action) {
+            if (ERP_STATE.shortcuts && ERP_STATE.shortcuts[action]) {
+                ERP_STATE.shortcuts[action].key = "";
+                ERP_STATE.shortcuts[action].ctrlKey = false;
+                ERP_STATE.shortcuts[action].altKey = false;
+                ERP_STATE.shortcuts[action].shiftKey = false;
+                ERP_STATE.shortcuts[action].display = "";
+                localStorage.setItem('sms_settings_shortcuts', JSON.stringify(ERP_STATE.shortcuts));
+                renderShortcutsTable();
+            }
         }
 
         function editShortcutCell(td, action) {
@@ -6986,13 +7197,13 @@
                 
                 const displayStr = parts.join('+');
                 
-                ERP_STATE.shortcuts[action] = {
+                ERP_STATE.shortcuts[action] = Object.assign({}, ERP_STATE.shortcuts[action], {
                     key: e.key.toLowerCase(),
                     ctrlKey: e.ctrlKey,
                     altKey: e.altKey,
                     shiftKey: e.shiftKey,
                     display: displayStr
-                };
+                });
                 
                 localStorage.setItem('sms_settings_shortcuts', JSON.stringify(ERP_STATE.shortcuts));
                 
@@ -7047,14 +7258,16 @@
 
         // ── SVG Analytics Engine ──
         function updateAnalyticsCharts() {
-            const containerA = document.getElementById('chart-a-container');
-            const containerB = document.getElementById('chart-b-container');
-            if (!containerA || !containerB) return;
+            const containersA = [document.getElementById('chart-a-container'), document.getElementById('dashboard-chart-a')].filter(Boolean);
+            const containersB = [document.getElementById('chart-b-container'), document.getElementById('dashboard-chart-b')].filter(Boolean);
+            if (containersA.length === 0 && containersB.length === 0) return;
 
             // --- CHART A: Purchase Volume by Shade ---
             const purchases = ERP_STATE.purchaseLog || [];
             if (purchases.length === 0) {
-                containerA.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem;">No purchase records available.</div>`;
+                containersA.forEach(c => {
+                    c.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem;">No purchase records available.</div>`;
+                });
             } else {
                 const shadeData = {};
                 purchases.forEach(p => {
@@ -7114,25 +7327,29 @@
                     barsHtml += `<text x="${padLeft + idx * colW + colW / 2}" y="${height - 8}" fill="#4b5563" font-size="8" text-anchor="middle" font-weight="bold">${shade}</text>`;
                 });
 
-                containerA.innerHTML = `
-                    <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}">
-                        ${yAxisHtml}
-                        ${barsHtml}
-                        <line x1="${padLeft}" y1="${padTop + chartH}" x2="${width - padRight}" y2="${padTop + chartH}" stroke="#9ca3af" stroke-width="1"/>
-                    </svg>
-                    <div style="display:flex; justify-content:center; gap:8px; font-size:0.68rem; margin-top:5px; flex-wrap:wrap;">
-                        <span style="display:flex; align-items:center; gap:3px;"><span style="display:inline-block; width:8px; height:8px; background:#3b82f6; border-radius:2px;"></span>-2</span>
-                        <span style="display:flex; align-items:center; gap:3px;"><span style="display:inline-block; width:8px; height:8px; background:#10b981; border-radius:2px;"></span>+2</span>
-                        <span style="display:flex; align-items:center; gap:3px;"><span style="display:inline-block; width:8px; height:8px; background:#f59e0b; border-radius:2px;"></span>MIX</span>
-                        <span style="display:flex; align-items:center; gap:3px;"><span style="display:inline-block; width:8px; height:8px; background:#9ca3af; border-radius:2px;"></span>Other</span>
-                    </div>
-                `;
+                containersA.forEach(c => {
+                    c.innerHTML = `
+                        <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}">
+                            ${yAxisHtml}
+                            ${barsHtml}
+                            <line x1="${padLeft}" y1="${padTop + chartH}" x2="${width - padRight}" y2="${padTop + chartH}" stroke="#9ca3af" stroke-width="1"/>
+                        </svg>
+                        <div style="display:flex; justify-content:center; gap:8px; font-size:0.68rem; margin-top:5px; flex-wrap:wrap;">
+                            <span style="display:flex; align-items:center; gap:3px;"><span style="display:inline-block; width:8px; height:8px; background:#3b82f6; border-radius:2px;"></span>-2</span>
+                            <span style="display:flex; align-items:center; gap:3px;"><span style="display:inline-block; width:8px; height:8px; background:#10b981; border-radius:2px;"></span>+2</span>
+                            <span style="display:flex; align-items:center; gap:3px;"><span style="display:inline-block; width:8px; height:8px; background:#f59e0b; border-radius:2px;"></span>MIX</span>
+                            <span style="display:flex; align-items:center; gap:3px;"><span style="display:inline-block; width:8px; height:8px; background:#9ca3af; border-radius:2px;"></span>Other</span>
+                        </div>
+                    `;
+                });
             }
 
             // --- CHART B: Sales Margin Distribution ---
             const sales = ERP_STATE.salesLog || [];
             if (sales.length === 0) {
-                containerB.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem;">No sales records available.</div>`;
+                containersB.forEach(c => {
+                    c.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem;">No sales records available.</div>`;
+                });
             } else {
                 const buckets = { 'Loss (<0%)': 0, 'Low (0-5%)': 0, 'Medium (5-15%)': 0, 'High (>15%)': 0 };
                 sales.forEach(l => {
@@ -7188,9 +7405,15 @@
                     `;
                 });
 
-                containerB.innerHTML = `
-                    </svg>
-                `;
+                containersB.forEach(c => {
+                    c.innerHTML = `
+                        <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}">
+                            ${yAxisHtml}
+                            ${barsHtml}
+                            <line x1="${padLeft}" y1="${padTop + chartH}" x2="${width - padRight}" y2="${padTop + chartH}" stroke="#9ca3af" stroke-width="1"/>
+                        </svg>
+                    `;
+                });
             }
         }
 
@@ -7384,15 +7607,20 @@
 
     <!-- Custom Dialog Modal Overlay -->
     <div id="custom-dialog-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 15000; justify-content: center; align-items: center; transition: all 0.2s ease;">
-        <div id="custom-dialog-modal" class="glass-card" style="background: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(255, 255, 255, 0.6); border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); width: 400px; padding: 22px; display: flex; flex-direction: column; gap: 14px; font-family: 'Segoe UI', -apple-system, sans-serif; position: relative;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span id="custom-dialog-icon" style="font-size: 2rem; flex-shrink: 0;">⚠️</span>
-                <span id="custom-dialog-title" style="font-weight: 700; font-size: 1.1rem; color: #002878; text-transform: uppercase; letter-spacing: 0.5px;">Confirmation</span>
+        <div id="custom-dialog-modal" style="background: #f0f0eb; border: 2px solid #002878; border-radius: 4px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); width: 400px; display: flex; flex-direction: column; overflow: hidden; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; position: relative;">
+            <div style="background: #002878; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.85rem;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <span id="custom-dialog-icon" style="font-size: 1.1rem; flex-shrink: 0;">⚠️</span>
+                    <span id="custom-dialog-title" style="text-transform: uppercase;">Confirmation</span>
+                </span>
+                <span onclick="closeCustomDialog('cancel')" style="cursor: pointer; font-size: 1.1rem; font-weight: bold;">✖</span>
             </div>
-            <div id="custom-dialog-msg" style="font-size: 0.9rem; color: #333; line-height: 1.5; white-space: pre-line; word-break: break-word; font-weight: 500;"></div>
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
-                <button type="button" class="erp-btn" id="custom-dialog-btn-cancel" onclick="closeCustomDialog('cancel')" style="background: white; border-color: #cbd5e1; color: #475569; padding: 6px 16px; border-radius: 6px; font-weight: bold; font-size: 0.85rem;">Cancel</button>
-                <button type="button" class="erp-btn" id="custom-dialog-btn-ok" onclick="closeCustomDialog('ok')" style="background: #002878; border-color: #002878; color: white; padding: 6px 20px; border-radius: 6px; font-weight: bold; font-size: 0.85rem;">Yes, Proceed</button>
+            <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+                <div id="custom-dialog-msg" style="font-size: 0.85rem; color: #333; line-height: 1.5; white-space: pre-line; word-break: break-word; font-weight: bold;"></div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                    <button type="button" class="erp-btn" id="custom-dialog-btn-cancel" onclick="closeCustomDialog('cancel')" style="background: rgba(0,0,0,0.05); border-color: #b0b0a8; color: var(--text-main); font-weight: bold; font-size: 0.8rem; border-radius: 4px;">Cancel</button>
+                    <button type="button" class="erp-btn" id="custom-dialog-btn-ok" onclick="closeCustomDialog('ok')" style="background: #002878; border-color: #002878; color: white; font-weight: bold; font-size: 0.8rem; border-radius: 4px;">Yes, Proceed</button>
+                </div>
             </div>
         </div>
     </div>
