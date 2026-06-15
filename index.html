@@ -2771,6 +2771,15 @@
                                     <button class="peye" onclick="togglePassVis('profile-confirm-password', this)" type="button" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">👁️</button>
                                 </div>
                             </div>
+                            
+                            <div class="input-group" style="margin-bottom:14px; border-top: 1px dashed #b0b0a8; padding-top: 14px; margin-top: 14px;">
+                                <label style="font-weight: bold; font-size: 0.8rem; margin-bottom: 4px; display: block;">Session Logout Time (Hours)</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="number" id="profile-logout-hours" min="1" max="168" value="12" onchange="updateLogoutHoursSetting(this.value)" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100px;">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);">hours (Allowed: 1 to 168 hours)</span>
+                                </div>
+                            </div>
+
                             <button class="erp-btn erp-btn-save" onclick="updateAdminCredentials()" style="font-size:0.85rem; padding:8px 20px; font-weight:bold; cursor:pointer;">Update Credentials</button>
                         </div>
                     </div>
@@ -2942,6 +2951,7 @@
             adminPassword: localStorage.getItem('sms_admin_password') || 'admin123',
             priceEditingUnlocked: false,
             isLoggedIn: false,
+            autoLogoutHours: parseFloat(localStorage.getItem('sms_auto_logout_duration')) || 12,
             // Assortment state properties
             assortRecords: [],
             assortLearningMatrix: {},
@@ -2968,6 +2978,8 @@
 
             if ((uInput === validUser && pInput === validPass) || isDefault) {
                 ERP_STATE.isLoggedIn = true;
+                localStorage.setItem('sms_is_logged_in', 'true');
+                localStorage.setItem('sms_login_time', Date.now().toString());
                 // If logging in via hardcoded defaults, sync state
                 if (isDefault) {
                     ERP_STATE.adminUsername = uInput;
@@ -2985,6 +2997,51 @@
                 document.getElementById('login-password').value = '';
                 document.getElementById('login-password').focus();
             }
+        }
+
+        function checkLoginSession() {
+            const isLoggedInStr = localStorage.getItem('sms_is_logged_in');
+            const loginTimeStr = localStorage.getItem('sms_login_time');
+            
+            if (isLoggedInStr === 'true' && loginTimeStr) {
+                const loginTime = parseInt(loginTimeStr, 10);
+                const currentTime = Date.now();
+                const sessionMs = ERP_STATE.autoLogoutHours * 60 * 60 * 1000;
+                
+                if (currentTime - loginTime < sessionMs) {
+                    ERP_STATE.isLoggedIn = true;
+                    const loginOverlay = document.getElementById('admin-login-overlay');
+                    if (loginOverlay) loginOverlay.style.display = 'none';
+                    
+                    const uEl = document.getElementById('profile-username');
+                    if (uEl) uEl.value = ERP_STATE.adminUsername;
+                    
+                    switchView('view-blank');
+                    return true;
+                }
+            }
+            
+            localStorage.removeItem('sms_is_logged_in');
+            localStorage.removeItem('sms_login_time');
+            ERP_STATE.isLoggedIn = false;
+            return false;
+        }
+
+        function updateLogoutHoursSetting(val) {
+            let hours = parseFloat(val);
+            if (isNaN(hours) || hours < 1) {
+                hours = 1;
+            } else if (hours > 168) {
+                hours = 168;
+            }
+            
+            ERP_STATE.autoLogoutHours = hours;
+            localStorage.setItem('sms_auto_logout_duration', hours.toString());
+            
+            const logoutHoursInput = document.getElementById('profile-logout-hours');
+            if (logoutHoursInput) logoutHoursInput.value = hours;
+            
+            showCustomAlert("Settings Updated", `Session logout time set to ${hours} hours.`, "success");
         }
 
         function resetAdminToDefault() {
@@ -3087,13 +3144,42 @@
                 });
             }, 30000);
 
+            // Check session and restore if valid
+            const sessionRestored = checkLoginSession();
+
             // Pre-initialize default view layout and sidebar options
             switchView('view-blank');
             updateLiveStatusClock();
 
-            // Focus login username field
-            const loginUser = document.getElementById('login-username');
-            if (loginUser) loginUser.focus();
+            // Focus login username field only if session was not restored
+            if (!sessionRestored) {
+                const loginUser = document.getElementById('login-username');
+                if (loginUser) loginUser.focus();
+            }
+
+            // Initialize the logout hours input field
+            const logoutHoursInput = document.getElementById('profile-logout-hours');
+            if (logoutHoursInput) {
+                logoutHoursInput.value = ERP_STATE.autoLogoutHours;
+            }
+
+            // Check session expiration every 10 seconds
+            setInterval(() => {
+                if (ERP_STATE.isLoggedIn) {
+                    const loginTimeStr = localStorage.getItem('sms_login_time');
+                    if (loginTimeStr) {
+                        const loginTime = parseInt(loginTimeStr, 10);
+                        const currentTime = Date.now();
+                        const sessionMs = ERP_STATE.autoLogoutHours * 60 * 60 * 1000;
+                        if (currentTime - loginTime >= sessionMs) {
+                            showCustomAlert("Session Expired", `🔒 Your ${ERP_STATE.autoLogoutHours}-hour login session has expired. You will be logged out automatically.`, "warning");
+                            doAdminLogout();
+                        }
+                    } else {
+                        doAdminLogout();
+                    }
+                }
+            }, 10000);
         });
 
         function saveDatabaseState() {
@@ -3360,6 +3446,8 @@
 
         function doAdminLogout() {
             ERP_STATE.isLoggedIn = false;
+            localStorage.removeItem('sms_is_logged_in');
+            localStorage.removeItem('sms_login_time');
             document.getElementById('admin-login-overlay').style.display = 'flex';
             document.getElementById('login-password').value = '';
             document.getElementById('login-username').value = '';
