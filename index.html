@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMS ERP</title>
+    <!-- Firebase core SDK and Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
         :root {
             --card-bg: #ffffff;
@@ -15,6 +18,15 @@
             --danger-color: #e74c3c;
             --warning-color: #f1c40f;
             --sidebar-width: 130px;
+        }
+
+        input.erp-custom-select {
+            cursor: pointer !important;
+        }
+        .erp-param-group input.erp-custom-select[readonly],
+        .erp-right-form input.erp-custom-select[readonly] {
+            background: #ffffff !important;
+            color: #2c3e50 !important;
         }
 
         * {
@@ -1195,6 +1207,104 @@
             50% { opacity: 1; }
             100% { opacity: 0.6; }
         }
+
+        /* ── Custom Searchable Suggestion Dropdown Popups ── */
+        .erp-search-menu-popup {
+            background: #f0f0eb;
+            border: 2px solid #555;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 320px;
+            font-family: inherit;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .search-menu-header {
+            background: #002878;
+            color: white;
+            padding: 5px 8px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #b0b0a8;
+            letter-spacing: 0.5px;
+        }
+
+        .search-menu-close {
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+        .search-menu-close:hover {
+            color: #ff606f;
+        }
+
+        .search-menu-body {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .search-menu-body label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .search-menu-body input {
+            width: 100%;
+            padding: 4px 6px;
+            font-size: 0.85rem;
+            border: 1px solid #7f8c8d;
+            background: white;
+            outline: none;
+            margin-bottom: 6px;
+        }
+
+        .search-menu-body input:focus {
+            background: #e2ffe2; /* light green background matches screenshot */
+            border-color: #002878;
+        }
+
+        .search-menu-options-container {
+            background: white;
+            border: 1px solid #b0b0a8;
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-menu-opt {
+            padding: 5px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-bottom: 1px solid #e0e0e0;
+            color: #000;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .search-menu-opt:last-child {
+            border-bottom: none;
+        }
+
+        .search-menu-opt:hover, .search-menu-opt.selected {
+            background: #eef2fa;
+            color: #002878;
+            font-weight: bold;
+        }
+
+        .search-menu-opt.add-new-opt {
+            color: #2ecc71;
+            font-weight: bold;
+            background: #f9f9f5;
+        }
     </style>
 </head>
 <body>
@@ -1283,7 +1393,7 @@
 
                             <button onclick="switchView('view-stock')" class="dashboard-shortcut-btn">
                                 <div style="font-size: 1.5rem; margin-bottom: 6px;">📦</div>
-                                <div style="font-weight: bold; font-size: 0.85rem; color: #002878; font-family: 'Segoe UI', sans-serif;">CURRENT STOCK</div>
+                                <div style="font-weight: bold; font-size: 0.85rem; color: #002878; font-family: 'Segoe UI', sans-serif;">TIJORI</div>
                                 <div style="font-size: 0.72rem; color: #666; margin-top: 4px; font-family: 'Segoe UI', sans-serif;">Tijori Live Balances (F9)</div>
                             </button>
 
@@ -1400,24 +1510,25 @@
                         </div>
                         <div class="erp-param-group">
                             <label style="font-size: 0.7rem;">PARTY <span>*</span></label>
-                            <select id="pur-form-party" style="font-size: 0.75rem; padding: 2px 4px;" onchange="handleQuickMasterChange('pur-form-party', 'party')" onkeydown="trackSelectKeydown(event, 'pur-form-party')" onmousedown="this.dataset.arrowNav='false'" required></select>
+                            <input type="text" id="pur-form-party" class="erp-custom-select" style="font-size: 0.75rem; padding: 2px 4px;" readonly onclick="openSearchMenu(this, 'party')" onfocus="openSearchMenu(this, 'party')" placeholder="-- SELECT PARTY --" required>
                         </div>
                         <div class="erp-param-group">
                             <label style="font-size: 0.7rem;">BROKER <span>*</span></label>
-                            <select id="pur-form-broker" style="font-size: 0.75rem; padding: 2px 4px;" onchange="handleQuickMasterChange('pur-form-broker', 'broker')" onkeydown="trackSelectKeydown(event, 'pur-form-broker')" onmousedown="this.dataset.arrowNav='false'" required></select>
+                            <input type="text" id="pur-form-broker" class="erp-custom-select" style="font-size: 0.75rem; padding: 2px 4px;" readonly onclick="openSearchMenu(this, 'broker')" onfocus="openSearchMenu(this, 'broker')" placeholder="-- SELECT BROKER --" required>
                         </div>
                     </div>
 
                     <!-- Extra Parameters Row (Credit Days, Brokerage) -->
-                    <div class="erp-param-grid" style="grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px 6px; margin-bottom: 4px;">
+                    <div class="erp-param-grid" style="grid-template-columns: 100px 100px 1fr; gap: 4px; padding: 4px 6px; margin-bottom: 4px;">
                         <div class="erp-param-group">
                             <label style="font-size: 0.7rem;">DAYS</label>
-                            <input type="number" id="pur-form-days" value="0" style="font-size: 0.75rem; padding: 2px 4px;" oninput="updateInvoiceTotals('pur')">
+                            <input type="text" id="pur-form-days" value="" style="font-size: 0.75rem; padding: 2px 4px; text-align: center;" oninput="updateInvoiceTotals('pur')">
                         </div>
                         <div class="erp-param-group">
                             <label style="font-size: 0.7rem;">BROKER %</label>
-                            <input type="number" step="0.01" id="pur-form-broker-pct" value="0.00" style="font-size: 0.75rem; padding: 2px 4px;" oninput="updateInvoiceTotals('pur')">
+                            <input type="text" id="pur-form-broker-pct" value="" style="font-size: 0.75rem; padding: 2px 4px; text-align: right;" oninput="updateInvoiceTotals('pur')">
                         </div>
+                        <div></div>
                     </div>
 
                     <!-- Spreadsheet Table -->
@@ -1443,9 +1554,9 @@
                             <tfoot id="pur-sheet-foot">
                                 <tr class="erp-sheet-input-row" id="pur-input-row">
                                     <td style="text-align: center; font-weight: bold;" id="pur-sheet-sno-next">1</td>
-                                    <td><select id="pur-sheet-shade"></select></td>
-                                    <td><select id="pur-sheet-size"></select></td>
-                                    <td><select id="pur-sheet-number"></select></td>
+                                    <td><input type="text" id="pur-sheet-shade" class="erp-custom-select" readonly onclick="openSearchMenu(this, 'shade')" onfocus="openSearchMenu(this, 'shade')" placeholder="" required></td>
+                                    <td><input type="text" id="pur-sheet-size" class="erp-custom-select" readonly onclick="openSearchMenu(this, 'size')" onfocus="openSearchMenu(this, 'size')" placeholder="" required></td>
+                                    <td><input type="text" id="pur-sheet-number" class="erp-custom-select" readonly onclick="openSearchMenu(this, 'number')" onfocus="openSearchMenu(this, 'number')" placeholder="" required></td>
                                     <td><input type="number" step="0.001" style="text-align: right;" id="pur-sheet-carats" placeholder="0.000" oninput="calcLiveSheetRow('pur')"></td>
                                     <td><input type="number" step="0.01" style="text-align: right;" id="pur-sheet-rate" placeholder="0.00" oninput="calcLiveSheetRow('pur')"></td>
                                     <td><input type="number" step="0.01" style="text-align: right;" id="pur-sheet-disc" placeholder="0.00" oninput="calcLiveSheetRow('pur')"></td>
@@ -1579,24 +1690,25 @@
                         </div>
                         <div class="erp-param-group">
                             <label style="font-size: 0.7rem;">PARTY <span>*</span></label>
-                            <select id="sale-form-party" style="font-size: 0.75rem; padding: 2px 4px;" onchange="handleQuickMasterChange('sale-form-party', 'party')" onkeydown="trackSelectKeydown(event, 'sale-form-party')" onmousedown="this.dataset.arrowNav='false'" required></select>
+                            <input type="text" id="sale-form-party" class="erp-custom-select" style="font-size: 0.75rem; padding: 2px 4px;" readonly onclick="openSearchMenu(this, 'party')" onfocus="openSearchMenu(this, 'party')" placeholder="-- SELECT PARTY --" required>
                         </div>
                         <div class="erp-param-group">
                             <label style="font-size: 0.7rem;">BROKER <span>*</span></label>
-                            <select id="sale-form-broker" style="font-size: 0.75rem; padding: 2px 4px;" onchange="handleQuickMasterChange('sale-form-broker', 'broker')" onkeydown="trackSelectKeydown(event, 'sale-form-broker')" onmousedown="this.dataset.arrowNav='false'" required></select>
+                            <input type="text" id="sale-form-broker" class="erp-custom-select" style="font-size: 0.75rem; padding: 2px 4px;" readonly onclick="openSearchMenu(this, 'broker')" onfocus="openSearchMenu(this, 'broker')" placeholder="-- SELECT BROKER --" required>
                         </div>
                     </div>
 
                     <!-- Extra Parameters Row (Credit Days, Brokerage) -->
-                    <div class="erp-param-grid" style="grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px 6px; margin-bottom: 4px;">
+                    <div class="erp-param-grid" style="grid-template-columns: 100px 100px 1fr; gap: 4px; padding: 4px 6px; margin-bottom: 4px;">
                         <div class="erp-param-group">
                             <label style="font-size: 0.7rem;">DAYS</label>
-                            <input type="number" id="sale-form-days" value="0" style="font-size: 0.75rem; padding: 2px 4px;" oninput="updateInvoiceTotals('sale')">
+                            <input type="text" id="sale-form-days" value="" style="font-size: 0.75rem; padding: 2px 4px; text-align: center;" oninput="updateInvoiceTotals('sale')">
                         </div>
                         <div class="erp-param-group">
                             <label style="font-size: 0.7rem;">BROKER %</label>
-                            <input type="number" step="0.01" id="sale-form-broker-pct" value="0.00" style="font-size: 0.75rem; padding: 2px 4px;" oninput="updateInvoiceTotals('sale')">
+                            <input type="text" id="sale-form-broker-pct" value="" style="font-size: 0.75rem; padding: 2px 4px; text-align: right;" oninput="updateInvoiceTotals('sale')">
                         </div>
+                        <div></div>
                     </div>
 
                     <!-- Spreadsheet Table -->
@@ -1774,7 +1886,7 @@
                         <button class="erp-btn" style="background: #002878; color: white;" onclick="addMasterItem('shade')">Save Shade</button>
                         <div style="border-top:1px solid #b0b0a8; margin:12px 0 8px;"></div>
                         <span style="font-weight: bold; font-size: 0.82rem; color: #e74c3c; display: block; border-bottom: 1px solid #e74c3c; padding-bottom: 4px; margin-bottom: 8px;">DELETE SHADE</span>
-                        <select id="delete-shade" style="width:100%; padding:4px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8;"></select>
+                        <input type="text" id="delete-shade" class="erp-custom-select" style="width:100%; padding:4px 6px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8; background:white; outline:none; border-radius:4px;" readonly onclick="openSearchMenu(this, 'shade')" onfocus="openSearchMenu(this, 'shade')" placeholder="-- SELECT SHADE TO DELETE --">
                         <button class="erp-btn" style="background:#e74c3c; color:white; width:100%;" onclick="deleteMasterItem('shade')">Delete Selected</button>
                     </div>
                     <div style="background: white; border: 1px solid #b0b0a8; padding: 12px; overflow-y: auto;">
@@ -1800,7 +1912,7 @@
                         <button class="erp-btn" style="background: #002878; color: white;" onclick="addMasterItem('number')">Save Number</button>
                         <div style="border-top:1px solid #b0b0a8; margin:12px 0 8px;"></div>
                         <span style="font-weight: bold; font-size: 0.82rem; color: #e74c3c; display: block; border-bottom: 1px solid #e74c3c; padding-bottom: 4px; margin-bottom: 8px;">DELETE NUMBER</span>
-                        <select id="delete-number" style="width:100%; padding:4px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8;"></select>
+                        <input type="text" id="delete-number" class="erp-custom-select" style="width:100%; padding:4px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8; background:white; outline:none;" readonly onclick="openSearchMenu(this, 'number')" onfocus="openSearchMenu(this, 'number')" placeholder="-- SELECT NUMBER TO DELETE --">
                         <button class="erp-btn" style="background:#e74c3c; color:white; width:100%;" onclick="deleteMasterItem('number')">Delete Selected</button>
                     </div>
                     <div style="background: white; border: 1px solid #b0b0a8; padding: 12px; overflow-y: auto;">
@@ -1826,7 +1938,7 @@
                         <button class="erp-btn" style="background: #002878; color: white;" onclick="addMasterItem('size')">Save Size</button>
                         <div style="border-top:1px solid #b0b0a8; margin:12px 0 8px;"></div>
                         <span style="font-weight: bold; font-size: 0.82rem; color: #e74c3c; display: block; border-bottom: 1px solid #e74c3c; padding-bottom: 4px; margin-bottom: 8px;">DELETE SIZE</span>
-                        <select id="delete-size" style="width:100%; padding:4px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8;"></select>
+                        <input type="text" id="delete-size" class="erp-custom-select" style="width:100%; padding:4px 6px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8; background:white; outline:none; border-radius:4px;" readonly onclick="openSearchMenu(this, 'size')" onfocus="openSearchMenu(this, 'size')" placeholder="-- SELECT SIZE TO DELETE --">
                         <button class="erp-btn" style="background:#e74c3c; color:white; width:100%;" onclick="deleteMasterItem('size')">Delete Selected</button>
                     </div>
                     <div style="background: white; border: 1px solid #b0b0a8; padding: 12px; overflow-y: auto;">
@@ -1852,7 +1964,7 @@
                         <button class="erp-btn" style="background: #002878; color: white;" onclick="addMasterItem('party')">Save Party Profile</button>
                         <div style="border-top:1px solid #b0b0a8; margin:12px 0 8px;"></div>
                         <span style="font-weight: bold; font-size: 0.82rem; color: #e74c3c; display: block; border-bottom: 1px solid #e74c3c; padding-bottom: 4px; margin-bottom: 8px;">DELETE PARTY</span>
-                        <select id="delete-party" style="width:100%; padding:4px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8;"></select>
+                        <input type="text" id="delete-party" class="erp-custom-select" style="width:100%; padding:4px 6px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8; background:white; outline:none; border-radius:4px;" readonly onclick="openSearchMenu(this, 'party')" onfocus="openSearchMenu(this, 'party')" placeholder="-- SELECT PARTY TO DELETE --">
                         <button class="erp-btn" style="background:#e74c3c; color:white; width:100%;" onclick="deleteMasterItem('party')">Delete Selected</button>
                     </div>
                     <div style="background: white; border: 1px solid #b0b0a8; padding: 12px; overflow-y: auto;">
@@ -1878,7 +1990,7 @@
                         <button class="erp-btn" style="background: #002878; color: white;" onclick="addMasterItem('broker')">Save Broker Profile</button>
                         <div style="border-top:1px solid #b0b0a8; margin:12px 0 8px;"></div>
                         <span style="font-weight: bold; font-size: 0.82rem; color: #e74c3c; display: block; border-bottom: 1px solid #e74c3c; padding-bottom: 4px; margin-bottom: 8px;">DELETE BROKER</span>
-                        <select id="delete-broker" style="width:100%; padding:4px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8;"></select>
+                        <input type="text" id="delete-broker" class="erp-custom-select" style="width:100%; padding:4px 6px; font-size:0.8rem; margin-bottom:8px; border:1px solid #b0b0a8; background:white; outline:none; border-radius:4px;" readonly onclick="openSearchMenu(this, 'broker')" onfocus="openSearchMenu(this, 'broker')" placeholder="-- SELECT BROKER TO DELETE --">
                         <button class="erp-btn" style="background:#e74c3c; color:white; width:100%;" onclick="deleteMasterItem('broker')">Delete Selected</button>
                     </div>
                     <div style="background: white; border: 1px solid #b0b0a8; padding: 12px; overflow-y: auto;">
@@ -2244,27 +2356,19 @@
                     </div>
                     <div class="erp-param-group">
                         <label>Party</label>
-                        <select id="filter-party" onchange="addReportFilter('Party', this.value)" style="font-size: 0.8rem; padding: 2px 3px;">
-                            <option value="">Select Party</option>
-                        </select>
+                        <input type="text" id="filter-party" class="erp-custom-select" style="font-size: 0.8rem; padding: 2px 3px; cursor: pointer; border: 1px solid #b0b0a8; background: white; outline: none; width: 100%;" readonly onclick="openSearchMenu(this, 'party')" onfocus="openSearchMenu(this, 'party')" placeholder="Select Party" onchange="addReportFilter('Party', this.value)">
                     </div>
                     <div class="erp-param-group">
                         <label>Broker</label>
-                        <select id="filter-broker" onchange="addReportFilter('Broker', this.value)" style="font-size: 0.8rem; padding: 2px 3px;">
-                            <option value="">Select Broker</option>
-                        </select>
+                        <input type="text" id="filter-broker" class="erp-custom-select" style="font-size: 0.8rem; padding: 2px 3px; cursor: pointer; border: 1px solid #b0b0a8; background: white; outline: none; width: 100%;" readonly onclick="openSearchMenu(this, 'broker')" onfocus="openSearchMenu(this, 'broker')" placeholder="Select Broker" onchange="addReportFilter('Broker', this.value)">
                     </div>
                     <div class="erp-param-group">
                         <label>Size</label>
-                        <select id="filter-size" onchange="addReportFilter('Size', this.value)" style="font-size: 0.8rem; padding: 2px 3px;">
-                            <option value="">Select Size</option>
-                        </select>
+                        <input type="text" id="filter-size" class="erp-custom-select" style="font-size: 0.8rem; padding: 2px 3px; cursor: pointer; border: 1px solid #b0b0a8; background: white; outline: none; width: 100%;" readonly onclick="openSearchMenu(this, 'size')" onfocus="openSearchMenu(this, 'size')" placeholder="Select Size" onchange="addReportFilter('Size', this.value)">
                     </div>
                     <div class="erp-param-group">
                         <label>Purity</label>
-                        <select id="filter-purity" onchange="addReportFilter('Purity', this.value)" style="font-size: 0.8rem; padding: 2px 3px;">
-                            <option value="">Select Purity</option>
-                        </select>
+                        <input type="text" id="filter-purity" class="erp-custom-select" style="font-size: 0.8rem; padding: 2px 3px; cursor: pointer; border: 1px solid #b0b0a8; background: white; outline: none; width: 100%;" readonly onclick="openSearchMenu(this, 'number')" onfocus="openSearchMenu(this, 'number')" placeholder="Select Purity" onchange="addReportFilter('Purity', this.value)">
                     </div>
                 </div>
 
@@ -2390,6 +2494,52 @@
             </div>
         </div>
 
+        <!-- Assortment Stock Picker Modal -->
+        <div id="assort-stock-picker-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:5000;"></div>
+        <div id="assort-stock-picker-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:5001; width:520px; max-height:85vh; background:#f0f0eb; border:2px solid #002878; border-radius:4px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:0; overflow:hidden;">
+            <div style="background:#002878; color:white; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:0.9rem;">
+                <span>Select Stock for Assortment Issue</span>
+                <span onclick="closeAssortStockPicker()" style="cursor:pointer; font-size:1.3rem; font-weight:bold;">✖</span>
+            </div>
+            <div style="padding:12px; overflow-y:auto; max-height:calc(85vh - 50px);">
+                <!-- Manual Custom Entry Section inside the picker modal -->
+                <div style="background:#e8e8df; border:1px solid #b0b0a8; border-radius:4px; padding:10px; margin-bottom:12px;">
+                    <span style="font-weight:bold; font-size:0.8rem; color:#002878; display:block; margin-bottom:6px;">✍️ Manual Entry (Not in Stock / Custom)</span>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <div style="flex:1;">
+                            <label style="font-size:0.75rem; display:block; margin-bottom:2px;">Sieve Size</label>
+                            <select id="assort-picker-manual-size" style="width:100%; font-size:0.8rem; padding:4px; border:1px solid #b0b0a8; border-radius:4px;"></select>
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.75rem; display:block; margin-bottom:2px;">Carats</label>
+                            <input type="number" id="assort-picker-manual-carats" step="0.001" placeholder="0.000" style="width:100%; font-size:0.8rem; padding:4px; border:1px solid #b0b0a8; border-radius:4px;">
+                        </div>
+                        <div style="align-self:flex-end;">
+                            <button type="button" class="erp-btn" onclick="applyAssortManualSelection()" style="background:#002878; color:white; padding:5px 12px; font-size:0.8rem; font-weight:bold; height:28px;">Apply</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:white; border:1px solid #b0b0a8; max-height:220px; overflow-y:auto;">
+                    <table class="erp-sheet-table" style="width:100%; font-size:0.8rem;">
+                        <thead style="position:sticky; top:0; background:#e0e0d8; z-index:1;">
+                            <tr>
+                                <th style="width:90px;">Shade</th>
+                                <th style="width:65px;">Size</th>
+                                <th style="width:110px;">Number</th>
+                                <th style="width:110px; text-align:right;">Carats</th>
+                                <th style="width:65px; text-align:center;">Sel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assort-stock-picker-body"></tbody>
+                    </table>
+                </div>
+                <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+                    <button class="erp-btn" type="button" onclick="closeAssortStockPicker()" style="background:#002878; color:white; padding:5px 20px; font-weight:bold;">Close</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Invoice Slip View Page -->
         <section id="view-slip" class="app-view scrollable-view">
             <div class="glass-card" style="max-width: 600px; margin: 30px auto; padding: 25px; display: flex; flex-direction: column; gap: 20px;">
@@ -2476,15 +2626,12 @@
                             
                             <div class="erp-param-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
                                 <div class="erp-param-group">
-                                    <label>Carats Given</label>
+                                    <label>Carats Given <span style="font-size:0.75rem; text-transform:none; font-weight:normal; float:right; cursor:pointer; color:#002878; text-decoration:underline;" onclick="openAssortStockPicker()">[Pick Stock]</span></label>
                                     <input type="number" id="assort-caratsGiven" step="0.001" placeholder="0.000" required>
                                 </div>
                                 <div class="erp-param-group">
                                     <label>Sieve Size</label>
-                                    <select id="assort-sieveSize">
-                                        <option value="-2">-2 (Stars / Melee)</option>
-                                        <option value="+2">+2 (Sizes / Pointers)</option>
-                                    </select>
+                                    <select id="assort-sieveSize"></select>
                                 </div>
                             </div>
                             
@@ -2734,93 +2881,147 @@
 
         <!-- System Settings Section -->
         <section id="view-settings" class="app-view scrollable-view">
-            <div style="max-width: 1100px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px;">
+            <div style="max-width: 100%; width: 100%; padding: 0 20px; margin: 20px auto; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box;">
                 
-                <!-- Side-by-Side Grid for Profile and Backup -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- 3-Column Wide Grid for Settings -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; width: 100%;">
                     
-                    <!-- Admin Profile & Security Card -->
-                    <div class="glass-card" style="margin: 0; padding: 25px;">
-                        <h2 style="font-size:1.3rem; margin-bottom:8px; display:flex; align-items:center; gap:6px;">👤 Admin Profile &amp; Security</h2>
-                        <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 20px;">Manage admin username and password. Entering the old password is required to set a new one.</p>
+                    <!-- Column 1: Admin Profile Card -->
+                    <div class="glass-card" style="margin: 0; padding: 25px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h2 style="font-size:1.3rem; margin-bottom:8px; display:flex; align-items:center; gap:6px; color:#002878; font-weight:bold;">👤 Admin Profile</h2>
+                            <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 20px;">Manage admin credentials. Entering current password is required to set new details.</p>
 
-                        <div style="margin-bottom:14px;">
                             <div class="input-group" style="margin-bottom:12px;">
                                 <label style="font-weight: bold; font-size: 0.8rem; margin-bottom: 4px; display: block;">Admin Username</label>
-                                <input type="text" id="profile-username" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%;">
+                                <input type="text" id="profile-username" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%; box-sizing: border-box;">
                             </div>
                             <div class="input-group" style="margin-bottom:12px;">
                                 <label style="font-weight: bold; font-size: 0.8rem; margin-bottom: 4px; display: block;">Current Password</label>
                                 <div class="pass-wrap" style="position:relative;">
-                                    <input type="password" id="profile-old-password" placeholder="Enter current password" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%; padding-right:36px;">
+                                    <input type="password" id="profile-old-password" placeholder="Enter current password" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%; padding-right:36px; box-sizing: border-box;">
                                     <button class="peye" onclick="togglePassVis('profile-old-password', this)" type="button" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">👁️</button>
                                 </div>
                             </div>
                             <div class="input-group" style="margin-bottom:12px;">
                                 <label style="font-weight: bold; font-size: 0.8rem; margin-bottom: 4px; display: block;">New Password</label>
                                 <div class="pass-wrap" style="position:relative;">
-                                    <input type="password" id="profile-new-password" placeholder="Enter new password" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%; padding-right:36px;">
+                                    <input type="password" id="profile-new-password" placeholder="Enter new password" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%; padding-right:36px; box-sizing: border-box;">
                                     <button class="peye" onclick="togglePassVis('profile-new-password', this)" type="button" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">👁️</button>
                                 </div>
                             </div>
                             <div class="input-group" style="margin-bottom:14px;">
                                 <label style="font-weight: bold; font-size: 0.8rem; margin-bottom: 4px; display: block;">Confirm New Password</label>
                                 <div class="pass-wrap" style="position:relative;">
-                                    <input type="password" id="profile-confirm-password" placeholder="Re-enter new password" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%; padding-right:36px;">
+                                    <input type="password" id="profile-confirm-password" placeholder="Re-enter new password" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%; padding-right:36px; box-sizing: border-box;">
                                     <button class="peye" onclick="togglePassVis('profile-confirm-password', this)" type="button" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">👁️</button>
                                 </div>
                             </div>
+                        </div>
+                        <button class="erp-btn erp-btn-save" onclick="updateAdminCredentials()" style="font-size:0.85rem; padding:8px 20px; font-weight:bold; cursor:pointer; margin-top: 15px; width: 100%;">Update Credentials</button>
+                    </div>
+
+                    <!-- Column 2: Invoice Security & Price Rules Card -->
+                    <div class="glass-card" style="margin: 0; padding: 25px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h2 style="font-size:1.3rem; margin-bottom:8px; display:flex; align-items:center; gap:6px; color:#002878; font-weight:bold;">🔐 Security &amp; Price Rules</h2>
+                            <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 20px;">Set security codes, session durations, and rate deviation limits for transactions.</p>
                             
+                            <div class="input-group" style="margin-bottom:14px;">
+                                <label style="font-weight: bold; font-size: 0.8rem; margin-bottom: 4px; display: block;">Invoice Edit / Delete Password</label>
+                                <div class="pass-wrap" style="position:relative;">
+                                    <input type="password" id="profile-edit-password" placeholder="Enter Edit/Delete Password" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100%; padding-right:36px; box-sizing: border-box;">
+                                    <button class="peye" onclick="togglePassVis('profile-edit-password', this)" type="button" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">👁️</button>
+                                </div>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; display: block;">Default: <strong>edit123</strong>. Falls back to Admin Password if blank.</span>
+                            </div>
+
                             <div class="input-group" style="margin-bottom:14px; border-top: 1px dashed #b0b0a8; padding-top: 14px; margin-top: 14px;">
                                 <label style="font-weight: bold; font-size: 0.8rem; margin-bottom: 4px; display: block;">Session Logout Time (Hours)</label>
                                 <div style="display: flex; gap: 10px; align-items: center;">
-                                    <input type="number" id="profile-logout-hours" min="1" max="168" value="12" onchange="updateLogoutHoursSetting(this.value)" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100px;">
-                                    <span style="font-size: 0.8rem; color: var(--text-muted);">hours (Allowed: 1 to 168 hours)</span>
+                                    <input type="number" id="profile-logout-hours" min="1" max="168" value="12" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:100px; box-sizing: border-box;">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);">hours (1 to 168 allowed)</span>
                                 </div>
                             </div>
 
-                            <button class="erp-btn erp-btn-save" onclick="updateAdminCredentials()" style="font-size:0.85rem; padding:8px 20px; font-weight:bold; cursor:pointer;">Update Credentials</button>
+                            <div class="input-group" style="margin-bottom:14px; border-top: 1px dashed #b0b0a8; padding-top: 14px; margin-top: 14px;">
+                                <label style="font-weight: bold; font-size: 0.8rem; margin-bottom: 4px; display: block;">Rate Deviation Warning Settings</label>
+                                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px;">
+                                    <select id="profile-deviation-mode" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; background:white; outline:none; width:130px;">
+                                        <option value="percentage">Percentage (%)</option>
+                                        <option value="amount">Amount (₹)</option>
+                                    </select>
+                                    <input type="number" id="profile-deviation-val" min="0" value="10" style="font-size:0.9rem; padding:6px 10px; border:1px solid #b0b0a8; border-radius:4px; width:90px; box-sizing: border-box;">
+                                    <span id="deviation-unit-lbl" style="font-size: 0.8rem; color: var(--text-muted);">% allowed</span>
+                                </div>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Deviation threshold before warning (0 turns warning off completely).</span>
+                            </div>
                         </div>
+                        <button class="erp-btn erp-btn-save" onclick="saveSecurityRulesSettings()" style="font-size:0.85rem; padding:8px 20px; font-weight:bold; cursor:pointer; margin-top: 15px; width: 100%;">Update Security &amp; Rules</button>
                     </div>
 
-                    <!-- Database Backup & Recovery Management Card -->
-                    <div class="glass-card" style="margin: 0; padding: 25px;">
-                        <h2 style="font-size:1.3rem; margin-bottom:8px; display:flex; align-items:center; gap:6px;">💾 Database Backup &amp; Recovery</h2>
-                        <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 15px;">Create and manage local backups of your complete database state (Polish inventory, Rojmel logs, series opening records, and Assortment logs).</p>
-                        
-                        <!-- Weekly Backup Reminder Notice -->
-                        <div id="backup-reminder-banner" style="background: rgba(241, 196, 15, 0.15); border-left: 4px solid #f1c40f; padding: 10px 12px; border-radius: 4px; margin-bottom: 15px; font-size: 0.82rem; color: #7f6000; display: flex; align-items: center; justify-content: space-between;">
-                            <span>⚠️ <strong>Reminder:</strong> Please execute a manual database backup at least once a week to protect your records.</span>
-                        </div>
+                    <!-- Column 3: Database Backup & Recovery Management Card -->
+                    <div class="glass-card" style="margin: 0; padding: 25px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <h2 style="font-size:1.3rem; margin-bottom:8px; display:flex; align-items:center; gap:6px; color:#002878; font-weight:bold;">💾 Backup &amp; Recovery</h2>
+                            
+                            <!-- Weekly Backup Reminder Notice -->
+                            <div id="backup-reminder-banner" style="background: rgba(241, 196, 15, 0.15); border-left: 4px solid #f1c40f; padding: 8px 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.76rem; color: #7f6000;">
+                                ⚠️ <strong>Notice:</strong> manual database backup once a week is highly recommended.
+                            </div>
 
-                        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                            <button class="erp-btn erp-btn-save" onclick="createManualBackup()" style="font-size:0.82rem; padding:8px 15px; flex: 1; font-weight:bold; cursor:pointer;">Create Manual Backup</button>
-                            <button class="erp-btn" onclick="importBackupFromString()" style="font-size:0.82rem; padding:8px 15px; background: rgba(0,0,0,0.05); border: 1px solid #b0b0a8; color: var(--text-main); flex: 1; font-weight:bold; cursor:pointer;">Import from String</button>
-                        </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+                                <button class="erp-btn erp-btn-save" onclick="createManualBackup()" style="font-size:0.82rem; padding:8px 15px; font-weight:bold; cursor:pointer; width: 100%;">Create Manual Backup</button>
+                                <button class="erp-btn" onclick="importBackupFromString()" style="font-size:0.82rem; padding:8px 15px; background: rgba(0,0,0,0.05); border: 1px solid #b0b0a8; color: var(--text-main); font-weight:bold; cursor:pointer; width: 100%;">Import from String</button>
+                                <button class="erp-btn" onclick="rebuildStockFromLogs()" style="font-size:0.82rem; padding:8px 15px; background: #002878; border-color: #002878; color: white; font-weight:bold; cursor:pointer; width: 100%;">🔄 Rebuild Stock from Logs</button>
+                            </div>
 
-                        <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e74c3c;">
-                            <button class="erp-btn" onclick="clearEntireDatabase()" style="font-size:0.82rem; padding:8px 15px; background: #e74c3c; border-color: #c0392b; color: white; width: 100%; font-weight:bold; cursor:pointer;">⚠️ WIPE ENTIRE DATABASE</button>
-                            <p style="font-size: 0.72rem; color: #e74c3c; margin-top: 6px; text-align: center;">This will permanently delete ALL data including stock, invoices, masters, and settings.</p>
-                        </div>
+                            <!-- Firebase Cloud Backup Status Card -->
+                            <div style="margin-top: 12px; padding: 10px; background: #f9f9f9; border: 1px solid #b0b0a8; border-radius: 4px; font-size: 0.78rem;">
+                                <h4 style="font-size: 0.85rem; margin-bottom: 6px; color: #002878; font-weight: bold; display: flex; align-items: center; justify-content: space-between;">
+                                    <span>☁ Cloud Sync (Firebase)</span>
+                                    <span id="firebase-status-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #7f8c8d;"></span>
+                                </h4>
+                                <div style="color: var(--text-muted); font-size: 0.72rem; line-height: 1.4; margin-bottom: 6px;">
+                                    Status: <strong id="firebase-status-text" style="color: #7f8c8d;">Offline</strong><br>
+                                    Database ID: <strong>sms-j-123</strong>
+                                </div>
+                                <button class="erp-btn" onclick="triggerFirebaseForceSync()" style="font-size: 0.72rem; padding: 3px 8px; background: #002878; border-color: #002878; color: white; font-weight: bold; cursor: pointer; width: 100%;">Sync Now</button>
+                            </div>
 
-                        <h3 style="font-size: 0.95rem; margin-bottom: 8px; color: #1e272e; font-weight: bold; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px;">Saved Backups History</h3>
-                        <div style="max-height: 180px; overflow-y: auto; background: white; border: 1px solid #b0b0a8; border-radius: 4px; padding: 5px; font-size: 0.8rem; margin-bottom: 15px;">
-                            <table style="width: 100%; border-collapse: collapse; text-align: left;" id="backup-history-table">
-                                <thead>
-                                    <tr style="background:#e0e0d8; font-weight:bold;">
-                                        <th style="padding: 6px;">Backup Name / Date</th>
-                                        <th style="padding: 6px; text-align: center; width: 140px;">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="backup-history-body">
-                                    <!-- Populated dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #b0b0a8;">
+                                <h4 style="font-size: 0.85rem; margin-bottom: 6px; color: #1e272e; font-weight: bold;">🔢 Invoice Counters</h4>
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 0.7rem; font-weight: bold; display: block; margin-bottom: 2px;">Purchase No.</label>
+                                        <input type="number" id="settings-purchase-counter" min="1" style="font-size: 0.8rem; padding: 4px 8px; border: 1px solid #b0b0a8; border-radius: 4px; width: 100%; box-sizing: border-box; background: white;">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 0.7rem; font-weight: bold; display: block; margin-bottom: 2px;">Sales No.</label>
+                                        <input type="number" id="settings-sales-counter" min="1" style="font-size: 0.8rem; padding: 4px 8px; border: 1px solid #b0b0a8; border-radius: 4px; width: 100%; box-sizing: border-box; background: white;">
+                                    </div>
+                                </div>
+                                <button class="erp-btn" onclick="saveInvoiceCountersSetting()" style="font-size: 0.78rem; padding: 5px 12px; background: #002878; border-color: #002878; color: white; font-weight: bold; cursor: pointer; width: 100%;">Save Invoice Counters</button>
+                            </div>
 
-                        <!-- Online Sync Notice -->
-                        <div style="background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.3); padding: 8px 10px; border-radius: 4px; font-size: 0.78rem; color: #27ae60; line-height: 1.3;">
-                            🌐 <strong>Firebase Online Backup Notice:</strong> Until online backup is configured, data is saved locally. It will automatically back up online to your Firebase account once configured.
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1.5px solid #e74c3c;">
+                                <button class="erp-btn" onclick="clearEntireDatabase()" style="font-size:0.8rem; padding:6px 12px; background: #e74c3c; border-color: #c0392b; color: white; width: 100%; font-weight:bold; cursor:pointer;">⚠️ WIPE DATABASE</button>
+                            </div>
+
+                            <div style="margin-top: 12px;">
+                                <h4 style="font-size: 0.82rem; margin-bottom: 4px; color: #1e272e; font-weight: bold;">Saved Backups</h4>
+                                <div style="max-height: 100px; overflow-y: auto; background: white; border: 1px solid #b0b0a8; border-radius: 4px; padding: 4px; font-size: 0.75rem;">
+                                    <table style="width: 100%; border-collapse: collapse; text-align: left;" id="backup-history-table">
+                                        <thead>
+                                            <tr style="background:#e0e0d8; font-weight:bold;">
+                                                <th style="padding: 4px;">Name/Date</th>
+                                                <th style="padding: 4px; text-align: center; width: 80px;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="backup-history-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2930,6 +3131,70 @@
     </div>
 
     <script>
+        // Global LocalStorage & SessionStorage Disabler Sandbox
+        try {
+            const emptyStorage = {
+                getItem: (key) => null,
+                setItem: (key, val) => {},
+                removeItem: (key) => {},
+                clear: () => {},
+                key: (idx) => null,
+                length: 0
+            };
+            Object.defineProperty(window, 'localStorage', {
+                value: emptyStorage,
+                writable: false,
+                configurable: true
+            });
+            Object.defineProperty(window, 'sessionStorage', {
+                value: emptyStorage,
+                writable: false,
+                configurable: true
+            });
+        } catch (e) {
+            console.warn("Storage override warning:", e);
+        }
+
+        // Initialize Firebase SDK
+        let db = null;
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyAA72jfISxLmlaWvU1q--dOAIXP5-6OF0U",
+                authDomain: "sms-j-123.firebaseapp.com",
+                projectId: "sms-j-123",
+                storageBucket: "sms-j-123.firebasestorage.app",
+                messagingSenderId: "793800397695",
+                appId: "1:793800397695:web:0c869d6c578eb4b165804a"
+            };
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (e) {
+            console.error("Firebase init failed:", e);
+        }
+
+        // Helper functions for notepad and sieve pricing cached variables (stored in-memory & synced to cloud)
+        function getStorageItem(key) {
+            if (key === 'sms_notepad_text') {
+                return ERP_STATE.notepadText || '';
+            }
+            if (key.startsWith('last-bhav-')) {
+                ERP_STATE.lastBhav = ERP_STATE.lastBhav || {};
+                return ERP_STATE.lastBhav[key] || '';
+            }
+            return null;
+        }
+
+        function setStorageItem(key, value) {
+            if (key === 'sms_notepad_text') {
+                ERP_STATE.notepadText = value;
+                saveDatabaseState();
+            } else if (key.startsWith('last-bhav-')) {
+                ERP_STATE.lastBhav = ERP_STATE.lastBhav || {};
+                ERP_STATE.lastBhav[key] = value;
+                saveDatabaseState();
+            }
+        }
+
         // Global ERP Runtime Application State
         const ERP_STATE = {
             masters: {
@@ -2948,9 +3213,12 @@
             invoiceCounters: { purchase: 1, sale: 1 },
             adminUsername: localStorage.getItem('sms_admin_username') || 'admin',
             adminPassword: localStorage.getItem('sms_admin_password') || 'admin123',
+            editPassword: localStorage.getItem('sms_edit_password') || 'edit123',
             priceEditingUnlocked: false,
             isLoggedIn: false,
             autoLogoutHours: parseFloat(localStorage.getItem('sms_auto_logout_duration')) || 12,
+            rateDeviationMode: localStorage.getItem('sms_rate_deviation_mode') || 'percentage',
+            rateDeviationVal: localStorage.getItem('sms_rate_deviation_val') !== null ? parseFloat(localStorage.getItem('sms_rate_deviation_val')) : 10,
             // Assortment state properties
             assortRecords: [],
             assortLearningMatrix: {},
@@ -2977,8 +3245,7 @@
 
             if ((uInput === validUser && pInput === validPass) || isDefault) {
                 ERP_STATE.isLoggedIn = true;
-                localStorage.setItem('sms_is_logged_in', 'true');
-                localStorage.setItem('sms_login_time', Date.now().toString());
+                ERP_STATE.loginTime = Date.now();
                 // If logging in via hardcoded defaults, sync state
                 if (isDefault) {
                     ERP_STATE.adminUsername = uInput;
@@ -2988,6 +3255,8 @@
                 // Populate profile fields
                 const uEl = document.getElementById('profile-username');
                 if (uEl) uEl.value = ERP_STATE.adminUsername;
+                const editPassEl = document.getElementById('profile-edit-password');
+                if (editPassEl) editPassEl.value = ERP_STATE.editPassword;
                 // Switch view to blank default view
                 switchView('view-blank');
                 errEl.innerText = '';
@@ -3014,6 +3283,8 @@
                     
                     const uEl = document.getElementById('profile-username');
                     if (uEl) uEl.value = ERP_STATE.adminUsername;
+                    const editPassEl = document.getElementById('profile-edit-password');
+                    if (editPassEl) editPassEl.value = ERP_STATE.editPassword;
                     
                     switchView('view-blank');
                     return true;
@@ -3041,6 +3312,32 @@
             if (logoutHoursInput) logoutHoursInput.value = hours;
             
             showCustomAlert("Settings Updated", `Session logout time set to ${hours} hours.`, "success");
+        }
+
+        function updateDeviationModeSetting(val) {
+            ERP_STATE.rateDeviationMode = val;
+            localStorage.setItem('sms_rate_deviation_mode', val);
+            
+            const unitLbl = document.getElementById('deviation-unit-lbl');
+            if (unitLbl) {
+                unitLbl.innerText = val === 'amount' ? '₹ difference allowed' : '% deviation allowed';
+            }
+            showCustomAlert("Settings Updated", `Rate deviation mode set to ${val === 'amount' ? 'Amount (₹)' : 'Percentage (%)'}.`, "success");
+        }
+
+        function updateDeviationValueSetting(val) {
+            let threshold = parseFloat(val);
+            if (isNaN(threshold) || threshold < 0) {
+                threshold = 0;
+            }
+            
+            ERP_STATE.rateDeviationVal = threshold;
+            localStorage.setItem('sms_rate_deviation_val', threshold.toString());
+            
+            const deviationInput = document.getElementById('profile-deviation-val');
+            if (deviationInput) deviationInput.value = threshold;
+            
+            showCustomAlert("Settings Updated", `Rate deviation threshold set to ${threshold}${ERP_STATE.rateDeviationMode === 'amount' ? ' ₹' : '%'}.`, "success");
         }
 
         function resetAdminToDefault() {
@@ -3089,13 +3386,123 @@
             }
             ERP_STATE.adminUsername = newUser;
             ERP_STATE.adminPassword = newPass;
-            localStorage.setItem('sms_admin_username', newUser);
-            localStorage.setItem('sms_admin_password', newPass);
+            saveDatabaseState();
+
             // Clear fields
             document.getElementById('profile-old-password').value = '';
             document.getElementById('profile-new-password').value = '';
             document.getElementById('profile-confirm-password').value = '';
             showCustomAlert("Success", "✅ Credentials updated successfully!", "success");
+        }
+
+        function updateEditPasswordSetting() {
+            const editPass = document.getElementById('profile-edit-password').value.trim();
+            ERP_STATE.editPassword = editPass;
+            saveDatabaseState();
+            showCustomAlert("Success", "✅ Security and Invoice Edit password updated successfully!", "success");
+        }
+
+        function saveSecurityRulesSettings() {
+            // 1. Edit Password
+            const editPass = document.getElementById('profile-edit-password').value.trim();
+            ERP_STATE.editPassword = editPass;
+
+            // 2. Logout Hours
+            const logoutHoursVal = document.getElementById('profile-logout-hours').value;
+            let hours = parseFloat(logoutHoursVal);
+            if (isNaN(hours) || hours < 1) hours = 1;
+            else if (hours > 168) hours = 168;
+            ERP_STATE.autoLogoutHours = hours;
+            document.getElementById('profile-logout-hours').value = hours;
+
+            // 3. Rate Deviation Warning Mode & Value
+            const mode = document.getElementById('profile-deviation-mode').value;
+            const deviationVal = parseFloat(document.getElementById('profile-deviation-val').value);
+            let threshold = isNaN(deviationVal) || deviationVal < 0 ? 0 : deviationVal;
+            
+            ERP_STATE.rateDeviationMode = mode;
+            ERP_STATE.rateDeviationVal = threshold;
+            saveDatabaseState();
+            document.getElementById('profile-deviation-val').value = threshold;
+
+            const unitLbl = document.getElementById('deviation-unit-lbl');
+            if (unitLbl) {
+                unitLbl.innerText = mode === 'amount' ? '₹ difference allowed' : '% deviation allowed';
+            }
+
+            showCustomAlert("Success", "✅ Security and price rules updated successfully!", "success");
+        }
+
+        function setupNumericInput(inputId, isDecimal, step, type) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+
+            // Handle keyboard arrow keys
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    let val = parseFloat(input.value) || 0;
+                    val = Math.max(0, val + step);
+                    input.value = isDecimal ? val.toFixed(2) : Math.round(val);
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    updateInvoiceTotals(type);
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    let val = parseFloat(input.value) || 0;
+                    val = Math.max(0, val - step);
+                    input.value = isDecimal ? val.toFixed(2) : Math.round(val);
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    updateInvoiceTotals(type);
+                }
+            });
+
+            // Prevent typing characters other than digits and optional dot
+            input.addEventListener('keypress', (e) => {
+                if (e.key.length > 1) return;
+                if (e.key >= '0' && e.key <= '9') return;
+                if (isDecimal && e.key === '.') {
+                    if (!input.value.includes('.')) {
+                        return;
+                    }
+                }
+                e.preventDefault();
+            });
+
+            // Handle paste or invalid inputs
+            input.addEventListener('input', (e) => {
+                let val = input.value;
+                if (isDecimal) {
+                    if (val.startsWith('.')) {
+                        val = '0' + val;
+                    }
+                    val = val.replace(/[^0-9.]/g, '');
+                    const parts = val.split('.');
+                    if (parts.length > 2) {
+                        val = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                } else {
+                    val = val.replace(/[^0-9]/g, '');
+                }
+                if (input.value !== val) {
+                    input.value = val;
+                }
+            });
+
+            // Handle blur formatting
+            input.addEventListener('blur', () => {
+                let raw = input.value.trim();
+                if (raw === "") {
+                    input.value = "";
+                } else {
+                    let val = parseFloat(raw);
+                    if (isNaN(val) || val < 0) {
+                        input.value = "";
+                    } else {
+                        input.value = isDecimal ? val.toFixed(2) : Math.round(val);
+                    }
+                }
+                updateInvoiceTotals(type);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -3115,10 +3522,21 @@
             // Seed initial transactional elements for full presentation view
             initializeBaseDatabaseState();
             loadDatabaseState();
-            refreshAllMasterSelectors();
-            actionAddNew('pur');
-            actionAddNew('sale');
-            renderAllDataComponents();
+            
+            // Load state from Firebase, and refresh components afterwards
+            loadStateFromFirebase(() => {
+                refreshAllMasterSelectors();
+                actionAddNew('pur');
+                actionAddNew('sale');
+                renderAllDataComponents();
+                renderBackupHistory();
+                updateBackupReminderUI();
+            });
+
+            setupNumericInput('pur-form-days', false, 1, 'pur');
+            setupNumericInput('pur-form-broker-pct', true, 0.05, 'pur');
+            setupNumericInput('sale-form-days', false, 1, 'sale');
+            setupNumericInput('sale-form-broker-pct', true, 0.05, 'sale');
 
             // Initialize backups rendering and reminder banner checks
             renderBackupHistory();
@@ -3162,12 +3580,25 @@
                 logoutHoursInput.value = ERP_STATE.autoLogoutHours;
             }
 
-            // Check session expiration every 10 seconds
+            // Initialize the rate deviation threshold input field and mode
+            const deviationModeSelect = document.getElementById('profile-deviation-mode');
+            if (deviationModeSelect) {
+                deviationModeSelect.value = ERP_STATE.rateDeviationMode || 'percentage';
+            }
+            const deviationInput = document.getElementById('profile-deviation-val');
+            if (deviationInput) {
+                deviationInput.value = ERP_STATE.rateDeviationVal !== undefined ? ERP_STATE.rateDeviationVal : 10;
+            }
+            const unitLbl = document.getElementById('deviation-unit-lbl');
+            if (unitLbl) {
+                unitLbl.innerText = ERP_STATE.rateDeviationMode === 'amount' ? '₹ difference allowed' : '% deviation allowed';
+            }
+
+            // Check session expiration every 10 seconds (stored in-memory, zero-local-storage)
             setInterval(() => {
                 if (ERP_STATE.isLoggedIn) {
-                    const loginTimeStr = localStorage.getItem('sms_login_time');
-                    if (loginTimeStr) {
-                        const loginTime = parseInt(loginTimeStr, 10);
+                    const loginTime = ERP_STATE.loginTime;
+                    if (loginTime) {
                         const currentTime = Date.now();
                         const sessionMs = ERP_STATE.autoLogoutHours * 60 * 60 * 1000;
                         if (currentTime - loginTime >= sessionMs) {
@@ -3181,35 +3612,313 @@
             }, 10000);
         });
 
+        function getStockKey(color, size, clarity) {
+            const c = (color || "").toString().trim().toUpperCase();
+            const s = (size || "").toString().trim().toUpperCase();
+            const cl = (clarity || "").toString().trim().toUpperCase();
+            return `${c}||${s}||${cl}`;
+        }
+
+        function normalizeDatabaseState() {
+            // 1. Normalize logs
+            if (Array.isArray(ERP_STATE.purchaseLog)) {
+                ERP_STATE.purchaseLog.forEach(item => {
+                    if (item.color) item.color = item.color.toString().trim().toUpperCase();
+                    if (item.size) item.size = item.size.toString().trim().toUpperCase();
+                    if (item.clarity) item.clarity = item.clarity.toString().trim().toUpperCase();
+                });
+            }
+            if (Array.isArray(ERP_STATE.salesLog)) {
+                ERP_STATE.salesLog.forEach(item => {
+                    if (item.color) item.color = item.color.toString().trim().toUpperCase();
+                    if (item.size) item.size = item.size.toString().trim().toUpperCase();
+                    if (item.clarity) item.clarity = item.clarity.toString().trim().toUpperCase();
+                });
+            }
+
+            // 2. Normalize masters lists
+            if (ERP_STATE.masters) {
+                const keys = ['colors', 'sizes', 'numbers', 'purities', 'seriesPurities', 'parties', 'brokers'];
+                keys.forEach(k => {
+                    if (Array.isArray(ERP_STATE.masters[k])) {
+                        ERP_STATE.masters[k] = ERP_STATE.masters[k]
+                            .map(x => (x || "").toString().trim().toUpperCase())
+                            .filter((val, idx, self) => val !== "" && self.indexOf(val) === idx);
+                    }
+                });
+            }
+
+            // 3. Normalize stock keys and sum/merge values
+            if (ERP_STATE.stock) {
+                const normalizedStock = {};
+                for (const [key, val] of Object.entries(ERP_STATE.stock)) {
+                    const parts = key.split('||');
+                    if (parts.length === 3) {
+                        const normKey = getStockKey(parts[0], parts[1], parts[2]);
+                        normalizedStock[normKey] = (normalizedStock[normKey] || 0) + val;
+                    } else {
+                        normalizedStock[key.trim().toUpperCase()] = val;
+                    }
+                }
+                ERP_STATE.stock = normalizedStock;
+            }
+
+            // 4. Save normalized database
+            saveDatabaseState();
+        }
+
         function saveDatabaseState() {
-            localStorage.setItem('sms_erp_stock', JSON.stringify(ERP_STATE.stock));
-            localStorage.setItem('sms_erp_purchase_log', JSON.stringify(ERP_STATE.purchaseLog));
-            localStorage.setItem('sms_erp_sales_log', JSON.stringify(ERP_STATE.salesLog));
-            localStorage.setItem('sms_erp_rojmel', JSON.stringify(ERP_STATE.rojmel));
-            localStorage.setItem('sms_erp_invoice_counters', JSON.stringify(ERP_STATE.invoiceCounters));
-            localStorage.setItem('sms_erp_invoice_metadata', JSON.stringify(ERP_STATE.invoiceMetadata));
-            localStorage.setItem('sms_erp_masters', JSON.stringify(ERP_STATE.masters));
-            // Save isolated assortment desk state
-            localStorage.setItem('sms_assort_records', JSON.stringify(ERP_STATE.assortRecords));
-            localStorage.setItem('sms_assort_learning_matrix', JSON.stringify(ERP_STATE.assortLearningMatrix));
-            localStorage.setItem('sms_assort_staff', JSON.stringify(ERP_STATE.assortStaff));
-            localStorage.setItem('sms_assort_lost_found', JSON.stringify(ERP_STATE.assortLostFound));
+            // Save strictly to Firebase Firestore as requested (localStorage is disabled)
+            saveStateToFirebase();
+        }
+
+        let firebaseSyncStatus = 'offline';
+
+        function updateFirebaseStatusUI(status, detailText) {
+            firebaseSyncStatus = status;
+            const dot = document.getElementById('firebase-status-dot');
+            const txt = document.getElementById('firebase-status-text');
+            if (!dot || !txt) return;
+
+            if (status === 'synced') {
+                dot.style.background = '#2ecc71';
+                txt.style.color = '#27ae60';
+                txt.innerText = detailText || 'Synced';
+            } else if (status === 'syncing') {
+                dot.style.background = '#f1c40f';
+                txt.style.color = '#d35400';
+                txt.innerText = detailText || 'Syncing...';
+            } else if (status === 'error') {
+                dot.style.background = '#e74c3c';
+                txt.style.color = '#c0392b';
+                txt.innerText = detailText || 'Sync Error';
+            } else {
+                dot.style.background = '#7f8c8d';
+                txt.style.color = '#7f8c8d';
+                txt.innerText = detailText || 'Offline';
+            }
+        }
+
+        function saveStateToFirebase() {
+            if (typeof firebase === 'undefined' || !firebase.apps.length || !db) {
+                updateFirebaseStatusUI('offline', 'Firebase SDK Offline');
+                return;
+            }
+
+            updateFirebaseStatusUI('syncing', 'Syncing changes...');
+
+            const docData = {
+                // Invoices and inventory logs
+                stock: ERP_STATE.stock || {},
+                purchaseLog: ERP_STATE.purchaseLog || [],
+                salesLog: ERP_STATE.salesLog || [],
+                rojmel: ERP_STATE.rojmel || [],
+                invoiceCounters: ERP_STATE.invoiceCounters || { purchase: 1, sale: 1 },
+                invoiceMetadata: ERP_STATE.invoiceMetadata || {},
+                masters: ERP_STATE.masters || {},
+
+                // Assortment state
+                assortRecords: ERP_STATE.assortRecords || [],
+                assortLearningMatrix: ERP_STATE.assortLearningMatrix || {},
+                assortStaff: ERP_STATE.assortStaff || [],
+                assortLostFound: ERP_STATE.assortLostFound || [],
+
+                // Manual backups history
+                manualBackups: ERP_STATE.manualBackups || [],
+                lastManualBackupTime: ERP_STATE.lastManualBackupTime || null,
+
+                // Profile and security parameters
+                adminUsername: ERP_STATE.adminUsername || 'admin',
+                adminPassword: ERP_STATE.adminPassword || 'admin123',
+                editPassword: ERP_STATE.editPassword || 'edit123',
+                autoLogoutHours: ERP_STATE.autoLogoutHours || 12,
+                rateDeviationMode: ERP_STATE.rateDeviationMode || 'percentage',
+                rateDeviationVal: ERP_STATE.rateDeviationVal !== undefined ? ERP_STATE.rateDeviationVal : 10,
+                shortcuts: ERP_STATE.shortcuts || {},
+                notepadText: ERP_STATE.notepadText || "",
+                lastBhav: ERP_STATE.lastBhav || {},
+
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            db.collection("erp_data").doc("global_state").set(docData)
+                .then(() => {
+                    updateFirebaseStatusUI('synced', 'Connected & Synced');
+                    console.log("Firebase state sync successful!");
+                })
+                .catch(err => {
+                    console.error("Firebase state sync failed:", err);
+                    updateFirebaseStatusUI('error', 'Sync Failed (Blocked/Offline)');
+                });
+        }
+
+        function loadStateFromFirebase(callback) {
+            if (typeof firebase === 'undefined' || !firebase.apps.length || !db) {
+                updateFirebaseStatusUI('offline', 'Firebase SDK Offline');
+                if (callback) callback();
+                return;
+            }
+
+            updateFirebaseStatusUI('syncing', 'Loading cloud state...');
+
+            db.collection("erp_data").doc("global_state").get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        
+                        // Populate memory variables from Firestore
+                        if (data.stock) ERP_STATE.stock = data.stock;
+                        if (data.purchaseLog) ERP_STATE.purchaseLog = data.purchaseLog;
+                        if (data.salesLog) ERP_STATE.salesLog = data.salesLog;
+                        if (data.rojmel) ERP_STATE.rojmel = data.rojmel;
+                        if (data.invoiceCounters) ERP_STATE.invoiceCounters = data.invoiceCounters;
+                        if (data.invoiceMetadata) ERP_STATE.invoiceMetadata = data.invoiceMetadata;
+                        if (data.masters) ERP_STATE.masters = data.masters;
+                        if (data.assortRecords) ERP_STATE.assortRecords = data.assortRecords;
+                        if (data.assortLearningMatrix) ERP_STATE.assortLearningMatrix = data.assortLearningMatrix;
+                        if (data.assortStaff) ERP_STATE.assortStaff = data.assortStaff;
+                        if (data.assortLostFound) ERP_STATE.assortLostFound = data.assortLostFound;
+                        
+                        if (data.manualBackups) ERP_STATE.manualBackups = data.manualBackups;
+                        if (data.lastManualBackupTime) ERP_STATE.lastManualBackupTime = data.lastManualBackupTime;
+
+                        if (data.adminUsername) ERP_STATE.adminUsername = data.adminUsername;
+                        if (data.adminPassword) ERP_STATE.adminPassword = data.adminPassword;
+                        if (data.editPassword) ERP_STATE.editPassword = data.editPassword;
+                        if (data.autoLogoutHours) ERP_STATE.autoLogoutHours = data.autoLogoutHours;
+                        if (data.rateDeviationMode) ERP_STATE.rateDeviationMode = data.rateDeviationMode;
+                        if (data.rateDeviationVal !== undefined) ERP_STATE.rateDeviationVal = data.rateDeviationVal;
+                        if (data.shortcuts) ERP_STATE.shortcuts = data.shortcuts;
+                        if (data.notepadText) ERP_STATE.notepadText = data.notepadText;
+                        if (data.lastBhav) ERP_STATE.lastBhav = data.lastBhav;
+
+                        updateFirebaseStatusUI('synced', 'Connected & Synced');
+                        console.log("Firebase state loaded successfully!");
+                    } else {
+                        console.log("No Firebase cloud state found. Uploading default base state.");
+                        saveStateToFirebase();
+                    }
+                    if (callback) callback();
+                })
+                .catch(err => {
+                    console.error("Firebase state load failed:", err);
+                    updateFirebaseStatusUI('error', 'Error Loading (Blocked/Offline)');
+                    if (callback) callback();
+                });
+        }
+
+        function triggerFirebaseForceSync() {
+            challengeAdminPassword(() => {
+                showCustomConfirm('Cloud Sync', 'Upload local browser database state to Firebase Firestore cloud storage now?', () => {
+                    saveStateToFirebase();
+                });
+            }, "Enter administrative password to authorize cloud upload:");
+        }
+
+        function rebuildStockFromLogs() {
+            challengeAdminPassword(() => {
+                showCustomConfirm('Recalculate Stock', 'Are you sure you want to rebuild and recalculate the stock balance strictly from transaction logs?', () => {
+                    const newStock = {};
+
+                    // 1. Process all purchases (adds to stock)
+                    const purchases = ERP_STATE.purchaseLog || [];
+                    purchases.forEach(p => {
+                        const key = getStockKey(p.color, p.size, p.clarity);
+                        newStock[key] = (newStock[key] || 0) + p.carats;
+                    });
+
+                    // 2. Process all sales (subtracts from stock)
+                    const sales = ERP_STATE.salesLog || [];
+                    sales.forEach(s => {
+                        const key = getStockKey(s.color, s.size, s.clarity);
+                        newStock[key] = (newStock[key] || 0) - s.carats;
+                    });
+
+                    // 3. Remove zero/near-zero balances
+                    for (const [key, qty] of Object.entries(newStock)) {
+                        if (Math.abs(qty) < 0.0001) {
+                            delete newStock[key];
+                        }
+                    }
+
+                    // 4. Save and apply
+                    ERP_STATE.stock = newStock;
+                    saveDatabaseState();
+                    renderAllDataComponents();
+                    showCustomAlert("Stock Recalculated", "Stock balances successfully recalculated and synchronized with purchase/sales log entries.", "success");
+                });
+            }, "Enter administrative password to recalculate stock:");
+        }
+
+        function saveInvoiceCountersSetting() {
+            const purVal = parseInt(document.getElementById('settings-purchase-counter').value) || 1;
+            const saleVal = parseInt(document.getElementById('settings-sales-counter').value) || 1;
+
+            if (purVal < 1 || saleVal < 1) {
+                showCustomAlert("Validation Error", "Invoice counters must be greater than or equal to 1.", "warning");
+                return;
+            }
+
+            challengeAdminPassword(() => {
+                ERP_STATE.invoiceCounters.purchase = purVal;
+                ERP_STATE.invoiceCounters.sale = saleVal;
+                saveDatabaseState();
+                showCustomAlert("Success", `Invoice counters updated! Next Purchase No suffix: INV-PR-${purVal}, Next Sales No suffix: INV-SL-${saleVal}.`, "success");
+            }, "Enter administrative password to update invoice counters:");
         }
 
         function clearEntireDatabase() {
-            showCustomConfirm('⚠️ WIPE ENTIRE DATABASE', 'This will permanently delete ALL saved data including stock, purchase/sale logs, rojmel, masters, assortment records, backups, and settings.\n\nThis action is IRREVERSIBLE. Are you absolutely sure?', () => {
-                // Remove all SMS ERP keys from localStorage
-                const keysToRemove = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && (key.startsWith('sms_') || key.startsWith('last-bhav-'))) {
-                        keysToRemove.push(key);
+            challengeAdminPassword(() => {
+                showCustomConfirm('⚠️ WIPE ENTIRE DATABASE', 'This will permanently delete ALL saved data including stock, purchase/sale logs, rojmel, masters, assortment records, backups, and settings.\n\nThis action is IRREVERSIBLE. Are you absolutely sure?', () => {
+                    // Reset ERP_STATE to baseline empty structures
+                    ERP_STATE.stock = {};
+                    ERP_STATE.purchaseLog = [];
+                    ERP_STATE.salesLog = [];
+                    ERP_STATE.rojmel = [];
+                    ERP_STATE.invoiceCounters = { purchase: 1, sale: 1 };
+                    ERP_STATE.invoiceMetadata = {};
+                    ERP_STATE.masters = {
+                        colors: ['White', 'BLC', 'Fancy Group'],
+                        sizes: ['-2', '+2', 'MIX'],
+                        numbers: ['WH 1 VVS', 'WH 1 VS SI', 'Wh vs colour', 'WH 2', 'NW 1', 'NW 2', 'ow1 better', 'OW 1', 'ttlb', 'dark lb', 'Wh 3', 'RIPER', 'table chari', 'Lc fancy'],
+                        purities: ['WH 1 VVS', 'WH 1 VS SI', 'Wh vs colour', 'WH 2', 'NW 1', 'NW 2', 'ow1 better', 'OW 1', 'ttlb', 'dark lb', 'Wh 3', 'RIPER', 'table chari', 'Lc fancy'],
+                        parties: [],
+                        brokers: [],
+                        seriesPurities: ['WH 1 VVS', 'WH 1 VS SI', 'Wh vs colour', 'WH 2', 'NW 1', 'NW 2', 'ow1 better', 'OW 1', 'ttlb', 'dark lb', 'Wh 3', 'RIPER', 'table chari', 'Lc fancy']
+                    };
+                    ERP_STATE.assortRecords = [];
+                    ERP_STATE.assortLearningMatrix = {};
+                    ERP_STATE.assortStaff = [];
+                    ERP_STATE.assortLostFound = [];
+                    ERP_STATE.manualBackups = [];
+                    ERP_STATE.lastManualBackupTime = null;
+                    ERP_STATE.adminUsername = 'admin';
+                    ERP_STATE.adminPassword = 'admin123';
+                    ERP_STATE.editPassword = 'edit123';
+                    ERP_STATE.autoLogoutHours = 12;
+                    ERP_STATE.rateDeviationMode = 'percentage';
+                    ERP_STATE.rateDeviationVal = 10;
+                    ERP_STATE.notepadText = "";
+                    ERP_STATE.lastBhav = {};
+
+                    // Sync the reset empty state to Firebase, then reload page
+                    if (typeof firebase !== 'undefined' && firebase.apps.length && db) {
+                        db.collection("erp_data").doc("global_state").delete()
+                            .then(() => {
+                                console.log("Firebase database document deleted successfully!");
+                                location.reload();
+                            })
+                            .catch(err => {
+                                console.error("Firebase document delete failed:", err);
+                                // Fallback: try saving base state
+                                saveStateToFirebase();
+                                setTimeout(() => location.reload(), 1500);
+                            });
+                    } else {
+                        location.reload();
                     }
-                }
-                keysToRemove.forEach(key => localStorage.removeItem(key));
-                // Reload the page to reset all in-memory state
-                location.reload();
-            }, null, 'danger');
+                }, null, 'danger');
+            }, "Enter administrative password to authorize database wipe:");
         }
 
         function loadDatabaseState() {
@@ -3270,12 +3979,12 @@
                     "Save Invoice": { key: "s", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+S", active: true },
                     "Open P.PURCHASE": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-purchase" },
                     "Open P.SELL": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-sale" },
-                    "Open CURRENT STOCK": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-stock" },
+                    "Open TIJORI": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-stock" },
                     "Open SERIES OPENING": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-opening" },
                     "Open ASSORTMENT": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-assortment" },
                     "Open MIX TRANSFER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-mix" },
-                    "Open OUT STANDING": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-payment-ir" },
-                    "Open ROJMEL LEDGER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-rojmel" },
+                    "Open PAYMENT I/R": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-payment-ir" },
+                    "Open TRANSACTION LOG": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-rojmel" },
                     "Open REPORT MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-reports" },
                     "Open WHATSAPP": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-whatsapp" },
                     "Open SHADE MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-purity-master" },
@@ -3302,6 +4011,7 @@
                         console.error("Failed to parse shortcuts", e);
                     }
                 }
+                normalizeDatabaseState();
             } catch (e) {
                 console.error("Failed to load database state from localStorage", e);
             }
@@ -3339,10 +4049,10 @@
                 'view-purchase': { tab: 'polish-entry', optText: 'P.PURCHASE' },
                 'view-sale': { tab: 'polish-entry', optText: 'P.SELL' },
                 'view-assortment': { tab: 'polish-entry', optText: 'ASSORTMENT' },
-                'view-payment-ir': { tab: 'accounts', optText: 'OUT STANDING' },
+                'view-payment-ir': { tab: 'accounts', optText: 'PAYMENT I/R' },
                 'view-mix': { tab: 'polish-entry', optText: 'MIX TRANSFER' },
-                'view-stock': { tab: 'polish-entry', optText: 'CURRENT STOCK' },
-                'view-rojmel': { tab: 'accounts', optText: 'ROJMEL LEDGER' },
+                'view-stock': { tab: 'polish-entry', optText: 'TIJORI' },
+                'view-rojmel': { tab: 'accounts', optText: 'TRANSACTION LOG' },
                 'view-reports': { tab: 'polish-reports', optText: 'REPORT MASTER' },
                 'view-whatsapp': { tab: 'polish-reports', optText: 'WHATSAPP' },
                 'view-purity-master': { tab: 'param-master', optText: 'SHADE MASTER' },
@@ -3368,6 +4078,12 @@
 
             if (viewId === 'view-settings') {
                 renderShortcutsTable();
+                
+                // Populate invoice counters inputs
+                const purCounter = document.getElementById('settings-purchase-counter');
+                const saleCounter = document.getElementById('settings-sales-counter');
+                if (purCounter) purCounter.value = ERP_STATE.invoiceCounters.purchase || 1;
+                if (saleCounter) saleCounter.value = ERP_STATE.invoiceCounters.sale || 1;
             }
             if (viewId === 'view-whatsapp') {
                 updateWhatsAppPreview();
@@ -3392,14 +4108,14 @@
                 'polish-entry': [
                     { label: 'P.PURCHASE<br>(F3)', view: 'view-purchase', match: 'P.PURCHASE' },
                     { label: 'P.SELL<br>(F4)', view: 'view-sale', match: 'P.SELL' },
-                    { label: 'CURRENT STOCK<br>(F9)', view: 'view-stock', match: 'CURRENT STOCK' },
+                    { label: 'TIJORI<br>(F9)', view: 'view-stock', match: 'TIJORI' },
                     { label: 'SERIES OPENING', view: 'view-opening', match: 'SERIES OPENING' },
                     { label: 'ASSORTMENT', view: 'view-assortment', match: 'ASSORTMENT' },
                     { label: 'MIX TRANSFER', view: 'view-mix', match: 'MIX TRANSFER' }
                 ],
                 'accounts': [
-                    { label: 'OUT STANDING<br>(F8)', view: 'view-payment-ir', match: 'OUT STANDING' },
-                    { label: 'ROJMEL LEDGER<br>(F10)', view: 'view-rojmel', match: 'ROJMEL LEDGER' }
+                    { label: 'PAYMENT I/R<br>(F8)', view: 'view-payment-ir', match: 'PAYMENT I/R' },
+                    { label: 'TRANSACTION LOG<br>(F10)', view: 'view-rojmel', match: 'TRANSACTION LOG' }
                 ],
                 'polish-reports': [
                     { label: 'REPORT MASTER', view: 'view-reports', match: 'REPORT MASTER' },
@@ -3458,7 +4174,7 @@
             const popup = document.getElementById('erp-notepad-popup');
             if (popup.style.display === 'none') {
                 popup.style.display = 'flex';
-                const saved = localStorage.getItem('sms_notepad_text') || '';
+                const saved = getStorageItem('sms_notepad_text') || '';
                 document.getElementById('erp-notepad-text').value = saved;
                 document.getElementById('erp-notepad-text').focus();
             } else {
@@ -3467,7 +4183,7 @@
         }
         function saveNotepadText() {
             const text = document.getElementById('erp-notepad-text').value;
-            localStorage.setItem('sms_notepad_text', text);
+            setStorageItem('sms_notepad_text', text);
         }
         
         let calcVal = '';
@@ -3557,15 +4273,22 @@
             const bindSelect = (id, list, placeholder, addOption) => {
                 const el = document.getElementById(id);
                 if (!el) return;
-                let html = "";
-                if (placeholder) {
-                    html += `<option value="">${placeholder}</option>`;
+                if (el.tagName === 'SELECT') {
+                    let html = "";
+                    if (placeholder) {
+                        html += `<option value="">${placeholder}</option>`;
+                    }
+                    if (addOption) {
+                        html += `<option value="${addOption}" style="font-weight:bold; color:var(--success-color);">${addOption}</option>`;
+                    }
+                    html += list.map(item => `<option value="${item}">${item}</option>`).join('');
+                    el.innerHTML = html;
+                } else if (el.tagName === 'INPUT') {
+                    if (el.value && !list.includes(el.value)) {
+                        el.value = "";
+                        el.dispatchEvent(new Event('change'));
+                    }
                 }
-                if (addOption) {
-                    html += `<option value="${addOption}" style="font-weight:bold; color:var(--success-color);">${addOption}</option>`;
-                }
-                html += list.map(item => `<option value="${item}">${item}</option>`).join('');
-                el.innerHTML = html;
             };
 
             // Legacy IDs (to keep Mix transfer, etc. from breaking)
@@ -3581,16 +4304,7 @@
             bindSelect('sale-party', ERP_STATE.masters.parties, '-- Select Party --', '+ Add New Party');
             bindSelect('sale-broker', ERP_STATE.masters.brokers, '-- Select Broker --', '+ Add New Broker');
 
-            // NEW split ERP form and sheet IDs
-            bindSelect('pur-form-party', ERP_STATE.masters.parties, '-- Select Party --', '+ Add New Party');
-            bindSelect('pur-form-broker', ERP_STATE.masters.brokers, '-- Select Broker --', '+ Add New Broker');
-            bindSelect('pur-sheet-shade', ERP_STATE.masters.colors, '-- Select Shade --');
-            bindSelect('pur-sheet-size', ERP_STATE.masters.sizes, '-- Select Size --');
-            bindSelect('pur-sheet-number', ERP_STATE.masters.numbers, '-- Select Number --');
-
-            bindSelect('sale-form-party', ERP_STATE.masters.parties, '-- Select Party --', '+ Add New Party');
-            bindSelect('sale-form-broker', ERP_STATE.masters.brokers, '-- Select Broker --', '+ Add New Broker');
-            // sale-sheet-shade/size/number are readonly inputs filled by stock picker
+            // NEW split ERP form and sheet IDs (custom input-driven lookup fields and handled separately)
 
             // Opening Stock Series Wizard select inputs
             bindSelect('opening-source-purity', ERP_STATE.masters.numbers, '-- Select Source Purity --');
@@ -3611,6 +4325,10 @@
             bindSelect('filter-broker', ERP_STATE.masters.brokers, 'Select Broker');
             bindSelect('filter-size', ERP_STATE.masters.sizes, 'Select Size');
             bindSelect('filter-purity', ERP_STATE.masters.numbers, 'Select Purity');
+
+            // Assortment Sieve size dropdown inputs
+            bindSelect('assort-sieveSize', ERP_STATE.masters.sizes);
+            bindSelect('assort-picker-manual-size', ERP_STATE.masters.sizes);
         }
 
         function updateMixSourceAvailable() {
@@ -3642,8 +4360,8 @@
             if (weight <= 0) { showCustomAlert("Validation Error", "Enter valid carat weights to execute shift.", "warning"); return; }
             if (rate <= 0) { showCustomAlert("Validation Error", "Enter valid assigned entry cost rate.", "warning"); return; }
 
-            const srcKey = `${srcColor}||${srcSize}||${srcPurity}`;
-            const destKey = `${destColor}||${destSize}||${destPurity}`;
+            const srcKey = getStockKey(srcColor, srcSize, srcPurity);
+            const destKey = getStockKey(destColor, destSize, destPurity);
 
             const available = ERP_STATE.stock[srcKey] || 0;
             
@@ -3652,11 +4370,22 @@
             let warningMsg = "";
 
             const avgRate = getAveragePurchaseRate(destSize, destPurity);
-            if (avgRate > 0) {
-                const deviation = Math.abs(rate - avgRate) / avgRate;
-                if (deviation > 0.10) {
+            const threshold = ERP_STATE.rateDeviationVal !== undefined ? ERP_STATE.rateDeviationVal : 10;
+            if (avgRate > 0 && threshold > 0) {
+                const diff = Math.abs(rate - avgRate);
+                let hasViolation = false;
+                let displayThresh = "";
+                if (ERP_STATE.rateDeviationMode === 'amount') {
+                    hasViolation = diff > threshold;
+                    displayThresh = `₹${threshold}`;
+                } else {
+                    hasViolation = (diff / avgRate) > (threshold / 100);
+                    displayThresh = `${threshold}%`;
+                }
+
+                if (hasViolation) {
                     hasWarning = true;
-                    warningMsg += `Rate deviation is > 10% from historical average (₹${Math.round(avgRate)}). `;
+                    warningMsg += `Rate deviation is > ${displayThresh} from historical average (₹${Math.round(avgRate)}). `;
                 }
             }
 
@@ -3690,13 +4419,28 @@
                 date: new Date().toISOString().split('T')[0],
                 party: "Polish Mix Transfer",
                 broker: "Direct Trading (No Broker)",
-                color: destColor,
-                size: destSize,
-                clarity: destPurity,
+                color: destColor.trim().toUpperCase(),
+                size: destSize.trim().toUpperCase(),
+                clarity: destPurity.trim().toUpperCase(),
                 carats: weight,
                 rate: rate,
                 amount: weight * rate,
-                remark: `From [${srcColor} ${srcSize} ${srcPurity}]`
+                remark: `From [${srcColor.trim().toUpperCase()} ${srcSize.trim().toUpperCase()} ${srcPurity.trim().toUpperCase()}]`
+            });
+
+            // Log deduction to salesLog so it matches during stock rebuild
+            ERP_STATE.salesLog.unshift({
+                invoice: "MIX-TRS-DED",
+                date: new Date().toISOString().split('T')[0],
+                party: "Polish Mix Transfer",
+                broker: "Direct Trading (No Broker)",
+                color: srcColor.trim().toUpperCase(),
+                size: srcSize.trim().toUpperCase(),
+                clarity: srcPurity.trim().toUpperCase(),
+                carats: weight,
+                rate: rate,
+                amount: weight * rate,
+                remark: `To [${destColor.trim().toUpperCase()} ${destSize.trim().toUpperCase()} ${destPurity.trim().toUpperCase()}]`
             });
 
             ERP_STATE.rojmel.unshift({
@@ -3730,9 +4474,9 @@
         }
 
         function addSheetRow(type, nextFocusId) {
-            const color = document.getElementById(`${type}-sheet-shade`).value;
-            const size = document.getElementById(`${type}-sheet-size`).value;
-            const clarity = document.getElementById(`${type}-sheet-number`).value;
+            const color = document.getElementById(`${type}-sheet-shade`).value.trim().toUpperCase();
+            const size = document.getElementById(`${type}-sheet-size`).value.trim().toUpperCase();
+            const clarity = document.getElementById(`${type}-sheet-number`).value.trim().toUpperCase();
             const carats = parseFloat(document.getElementById(`${type}-sheet-carats`).value) || 0;
             const rate = parseFloat(document.getElementById(`${type}-sheet-rate`).value) || 0;
             const disc = parseFloat(document.getElementById(`${type}-sheet-disc`).value) || 0;
@@ -3774,16 +4518,27 @@
             let warningMsg = "";
 
             const avgRate = getAveragePurchaseRate(size, clarity);
-            if (avgRate > 0) {
-                const deviation = Math.abs(rate - avgRate) / avgRate;
-                if (deviation > 0.10) {
+            const threshold = ERP_STATE.rateDeviationVal !== undefined ? ERP_STATE.rateDeviationVal : 10;
+            if (avgRate > 0 && threshold > 0) {
+                const diff = Math.abs(rate - avgRate);
+                let hasViolation = false;
+                let displayThresh = "";
+                if (ERP_STATE.rateDeviationMode === 'amount') {
+                    hasViolation = diff > threshold;
+                    displayThresh = `₹${threshold}`;
+                } else {
+                    hasViolation = (diff / avgRate) > (threshold / 100);
+                    displayThresh = `${threshold}%`;
+                }
+
+                if (hasViolation) {
                     hasWarning = true;
-                    warningMsg += `Rate deviation is > 10% from historical average (₹${Math.round(avgRate)}). `;
+                    warningMsg += `Rate deviation is > ${displayThresh} from historical average (₹${Math.round(avgRate)}). `;
                 }
             }
 
             if (type === 'sale') {
-                const stockKey = `${color}||${size}||${clarity}`;
+                const stockKey = getStockKey(color, size, clarity);
                 const available = ERP_STATE.stock[stockKey] || 0;
                 const invNo = document.getElementById(`${type}-form-inv-no`).value.trim();
                 let originalInvoiceCarats = 0;
@@ -3927,7 +4682,7 @@
 
                 // Check stock sufficiency for sales
                 if (type === 'sale') {
-                    const stockKey = `${item.color}||${item.size}||${item.clarity}`;
+                    const stockKey = getStockKey(item.color, item.size, item.clarity);
                     const available = ERP_STATE.stock[stockKey] || 0;
                     
                     // If editing a saved invoice, we add back its original carats for this lot when verifying sufficiency
@@ -4069,8 +4824,8 @@
             document.getElementById(`${type}-form-party`).value = "";
             document.getElementById(`${type}-form-broker`).value = "";
 
-            document.getElementById(`${type}-form-days`).value = 0;
-            document.getElementById(`${type}-form-broker-pct`).value = 0;
+            document.getElementById(`${type}-form-days`).value = "";
+            document.getElementById(`${type}-form-broker-pct`).value = "";
 
             // Enable parameter headers
             document.getElementById(`${type}-form-date`).readOnly = false;
@@ -4164,19 +4919,97 @@
             const existingItems = log.filter(x => x.invoice === invNo);
             const isOverwrite = existingItems.length > 0;
 
-            const proceedSave = () => {
-                // Revert old stock adjustments first
-                if (isOverwrite) {
-                    for (const oldItem of existingItems) {
-                        const stockKey = `${oldItem.color}||${oldItem.size}||${oldItem.clarity}`;
-                        const available = ERP_STATE.stock[stockKey] || 0;
-                        if (type === 'pur') {
-                            ERP_STATE.stock[stockKey] = Math.max(0, available - oldItem.carats);
-                        } else {
-                            ERP_STATE.stock[stockKey] = available + oldItem.carats;
+            // Integrity Check: Prevent editing purchase invoice if it reduces stock below what was already sold
+            if (type === 'pur' && isOverwrite) {
+                const netChanges = {};
+                for (const oldItem of existingItems) {
+                    const key = getStockKey(oldItem.color, oldItem.size, oldItem.clarity);
+                    netChanges[key] = (netChanges[key] || 0) - oldItem.carats;
+                }
+                for (const newItem of items) {
+                    const key = getStockKey(newItem.color, newItem.size, newItem.clarity);
+                    netChanges[key] = (netChanges[key] || 0) + newItem.carats;
+                }
+
+                for (const [key, netChange] of Object.entries(netChanges)) {
+                    if (netChange < 0) {
+                        const available = ERP_STATE.stock[key] || 0;
+                        if (available + netChange < -0.0001) {
+                            const parts = key.split('||');
+                            showCustomAlert("Stock Integrity Block", `Cannot update this purchase invoice. The items (${parts[0]} - ${parts[1]} - ${parts[2]}) have already been sold. The edit would reduce the stock by ${Math.abs(netChange).toFixed(3)} Cts, but only ${available.toFixed(3)} Cts is available.`, "error");
+                            return;
                         }
                     }
+                }
+            }
 
+            const proceedSave = () => {
+                // 1. Clone stock for transaction
+                const tempStock = { ...ERP_STATE.stock };
+
+                // 2. Simulate reverting old stock adjustments
+                if (isOverwrite) {
+                    for (const oldItem of existingItems) {
+                        const stockKey = getStockKey(oldItem.color, oldItem.size, oldItem.clarity);
+                        const available = tempStock[stockKey] || 0;
+                        if (type === 'pur') {
+                            tempStock[stockKey] = Math.max(0, available - oldItem.carats);
+                        } else {
+                            tempStock[stockKey] = available + oldItem.carats;
+                        }
+                    }
+                }
+
+                // 3. Simulate and validate new stock adjustments
+                const days = parseInt(document.getElementById(`${type}-form-days`).value) || 0;
+                const addLess1 = 0;
+                const addLess2 = 0;
+                const brokerage = parseFloat(document.getElementById(`${type}-form-broker-pct`).value) || 0;
+
+                let totalCaratsSaved = 0;
+                let finalItemsToSave = [];
+
+                for (let idx = 0; idx < items.length; idx++) {
+                    const item = items[idx];
+                    const stockKey = getStockKey(item.color, item.size, item.clarity);
+                    const available = tempStock[stockKey] || 0;
+
+                    if (type === 'sale') {
+                        if (available < item.carats) {
+                            showCustomAlert("Save Blocked", `Insufficient stock balance for lot [${item.color} | ${item.size} | ${item.clarity}]. Available: ${available.toFixed(3)} Cts. Required: ${item.carats.toFixed(3)} Cts.`, "error");
+                            return;
+                        }
+                        tempStock[stockKey] = available - item.carats;
+                    } else {
+                        tempStock[stockKey] = available + item.carats;
+                    }
+
+                    totalCaratsSaved += item.carats;
+
+                    finalItemsToSave.push({
+                        invoice: invNo,
+                        sNo: item.sNo || (idx + 1),
+                        date,
+                        party,
+                        broker,
+                        color: item.color.trim().toUpperCase(),
+                        size: item.size.trim().toUpperCase(),
+                        clarity: item.clarity.trim().toUpperCase(),
+                        carats: item.carats,
+                        rate: item.rate,
+                        amount: item.amount,
+                        remark: item.remark || "",
+                        stockId: item.stockId,
+                        shape: "ROUND",
+                        pcs: 0,
+                        alPct1: 0, alAmt1: 0, alPct2: 0, alAmt2: 0
+                    });
+                }
+
+                // 4. Commit transaction
+                ERP_STATE.stock = tempStock;
+
+                if (isOverwrite) {
                     // Remove old items from log
                     if (type === 'pur') {
                         ERP_STATE.purchaseLog = ERP_STATE.purchaseLog.filter(x => x.invoice !== invNo);
@@ -4189,11 +5022,6 @@
                 const draftMeta = ERP_STATE.invoiceMetadata[invNo] || { customExpenses: [] };
                 const customExpenses = draftMeta.customExpenses || [];
 
-                const days = parseInt(document.getElementById(`${type}-form-days`).value) || 0;
-                const addLess1 = 0;
-                const addLess2 = 0;
-                const brokerage = parseFloat(document.getElementById(`${type}-form-broker-pct`).value) || 0;
-
                 const meta = {
                     party,
                     broker,
@@ -4204,47 +5032,6 @@
                     addLess2: addLess2,
                     brokerage: brokerage
                 };
-
-                // Double check stock and update stock records
-                let totalCaratsSaved = 0;
-                let finalItemsToSave = [];
-
-                for (let idx = 0; idx < items.length; idx++) {
-                    const item = items[idx];
-                    const stockKey = `${item.color}||${item.size}||${item.clarity}`;
-                    const available = ERP_STATE.stock[stockKey] || 0;
-
-                    if (type === 'sale') {
-                        if (available < item.carats) {
-                            showCustomAlert("Save Blocked", `Insufficient stock balance for lot [${item.color} | ${item.size} | ${item.clarity}]. Available: ${available.toFixed(3)} Cts. Required: ${item.carats.toFixed(3)} Cts.`, "error");
-                            return;
-                        }
-                        ERP_STATE.stock[stockKey] = available - item.carats;
-                    } else {
-                        ERP_STATE.stock[stockKey] = available + item.carats;
-                    }
-
-                    totalCaratsSaved += item.carats;
-
-                    finalItemsToSave.push({
-                        invoice: invNo,
-                        sNo: item.sNo || (idx + 1),
-                        date,
-                        party,
-                        broker,
-                        color: item.color,
-                        size: item.size,
-                        clarity: item.clarity,
-                        carats: item.carats,
-                        rate: item.rate,
-                        amount: item.amount,
-                        remark: item.remark || "",
-                        stockId: item.stockId,
-                        shape: "ROUND",
-                        pcs: 0,
-                        alPct1: 0, alAmt1: 0, alPct2: 0, alAmt2: 0
-                    });
-                }
 
                 // Save items into logs (unshift in reverse order to keep correct flat representation order)
                 const targetLog = type === 'pur' ? ERP_STATE.purchaseLog : ERP_STATE.salesLog;
@@ -4290,8 +5077,30 @@
         }
 
         function actionDeleteInvoice(type) {
-            const invNo = document.getElementById(`${type}-form-inv-no`).value;
+            const invNo = document.getElementById(`${type}-form-inv-no`).value.trim();
             if (!invNo) return;
+
+            const logKey = type === 'pur' ? 'purchaseLog' : 'salesLog';
+            const log = ERP_STATE[logKey];
+            const matching = log.filter(x => x.invoice === invNo);
+
+            // Stock Integrity Check: Prevent deleting purchase invoice if items were already sold
+            if (type === 'pur') {
+                const delAmounts = {};
+                for (const item of matching) {
+                    const stockKey = getStockKey(item.color, item.size, item.clarity);
+                    delAmounts[stockKey] = (delAmounts[stockKey] || 0) + item.carats;
+                }
+                
+                for (const [stockKey, caratsToDelete] of Object.entries(delAmounts)) {
+                    const available = ERP_STATE.stock[stockKey] || 0;
+                    if (available - caratsToDelete < -0.0001) {
+                        const parts = stockKey.split('||');
+                        showCustomAlert("Stock Integrity Block", `Cannot delete this purchase invoice. The items (${parts[0]} - ${parts[1]} - ${parts[2]}) have already been sold. Remaining stock (${available.toFixed(3)} Cts) is less than the amount being deleted (${caratsToDelete.toFixed(3)} Cts).`, "error");
+                        return;
+                    }
+                }
+            }
 
             challengeAdminPassword(() => {
                 showCustomConfirm('Delete Invoice', `Are you absolutely sure you want to delete invoice ${invNo}? This will revert all stock adjustments.`, () => {
@@ -4302,7 +5111,7 @@
                     
                     // Revert stock adjustments
                     for (const item of matching) {
-                        const stockKey = `${item.color}||${item.size}||${item.clarity}`;
+                        const stockKey = getStockKey(item.color, item.size, item.clarity);
                         const available = ERP_STATE.stock[stockKey] || 0;
 
                         if (type === 'pur') {
@@ -4337,7 +5146,7 @@
 
                     showCustomAlert("Success", `Invoice ${invNo} successfully deleted.`, "success");
                 }, null, 'danger');
-            }, `Enter administrative password to delete this ${type === 'pur' ? 'purchase' : 'sale'} invoice:`);
+            }, `Enter password to delete this ${type === 'pur' ? 'purchase' : 'sale'} invoice:`, null, 'edit');
         }
 
         function actionClose(type) {
@@ -4393,7 +5202,7 @@
                 if (slipBtn) slipBtn.style.display = 'inline-flex';
 
                 renderSheetTable(type, false); // False means editable view
-            }, `Enter administrative password to edit this ${type === 'pur' ? 'purchase' : 'sale'} invoice:`, onCancel);
+            }, `Enter password to edit this ${type === 'pur' ? 'purchase' : 'sale'} invoice:`, onCancel, 'edit');
         }
 
         function loadInvoiceIntoForm(type, invoiceNo) {
@@ -4457,8 +5266,8 @@
             document.getElementById(`${type}-form-party`).value = items[0].party;
             document.getElementById(`${type}-form-broker`).value = items[0].broker;
 
-            document.getElementById(`${type}-form-days`).value = meta.days || 0;
-            document.getElementById(`${type}-form-broker-pct`).value = meta.brokerage || 0;
+            document.getElementById(`${type}-form-days`).value = Math.round(meta.days || 0);
+            document.getElementById(`${type}-form-broker-pct`).value = parseFloat(meta.brokerage || 0).toFixed(2);
 
             // Render custom expenses
             renderCustomExpenses(type, invoiceNo);
@@ -4859,11 +5668,13 @@
 
         let activePasswordCallback = null;
         let activePasswordCancelCallback = null;
+        let activePasswordChallengeType = 'admin';
 
-        function challengeAdminPassword(callback, message = "", cancelCallback = null) {
+        function challengeAdminPassword(callback, message = "", cancelCallback = null, challengeType = 'admin') {
             activePasswordCallback = callback;
             activePasswordCancelCallback = cancelCallback;
-            document.getElementById('password-challenge-msg').innerText = message || "Please enter the administrator password to proceed.";
+            activePasswordChallengeType = challengeType;
+            document.getElementById('password-challenge-msg').innerText = message || "Please enter the password to proceed.";
             document.getElementById('challenge-password-input').value = "";
             document.getElementById('challenge-password-error').innerText = "";
             document.getElementById('password-modal-overlay').style.display = 'block';
@@ -4879,6 +5690,7 @@
             pInput.onkeydown = (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
+                    e.stopPropagation();
                     submitPasswordChallenge();
                 }
             };
@@ -4886,7 +5698,10 @@
 
         function submitPasswordChallenge() {
             const inputVal = document.getElementById('challenge-password-input').value;
-            const correctPass = ERP_STATE.adminPassword || "admin123";
+            let correctPass = ERP_STATE.adminPassword || "admin123";
+            if (activePasswordChallengeType === 'edit') {
+                correctPass = ERP_STATE.editPassword || ERP_STATE.adminPassword || "admin123";
+            }
             const errEl = document.getElementById('challenge-password-error');
 
             if (inputVal === correctPass) {
@@ -5026,7 +5841,7 @@
             }
             
             ERP_STATE.masters.seriesPurities.push(val);
-            localStorage.setItem('sms_series_purities', JSON.stringify(ERP_STATE.masters.seriesPurities));
+            saveDatabaseState();
             input.value = "";
             renderSeriesPurityMaster();
         }
@@ -5038,14 +5853,14 @@
             if (ERP_STATE.masters.seriesPurities.includes(purity)) return;
             
             ERP_STATE.masters.seriesPurities.push(purity);
-            localStorage.setItem('sms_series_purities', JSON.stringify(ERP_STATE.masters.seriesPurities));
+            saveDatabaseState();
             renderSeriesPurityMaster();
         }
 
         function deleteSeriesPurity(idx) {
             showCustomConfirm('Remove Purity', "Are you sure you want to remove this purity from the series wizard? (This does not delete any stock data)", () => {
                 ERP_STATE.masters.seriesPurities.splice(idx, 1);
-                localStorage.setItem('sms_series_purities', JSON.stringify(ERP_STATE.masters.seriesPurities));
+                saveDatabaseState();
                 renderSeriesPurityMaster();
             });
         }
@@ -5059,7 +5874,7 @@
             list[idx] = list[target];
             list[target] = temp;
             
-            localStorage.setItem('sms_series_purities', JSON.stringify(ERP_STATE.masters.seriesPurities));
+            saveDatabaseState();
             renderSeriesPurityMaster();
         }
 
@@ -5095,8 +5910,13 @@
         function getWeightedAveragePurchaseRate(purity, size, color) {
             let totalCts = 0;
             let totalAmt = 0;
+            const normPurity = (purity || "").trim().toUpperCase();
+            const normSize = (size || "").trim().toUpperCase();
+            const normColor = (color || "").trim().toUpperCase();
             ERP_STATE.purchaseLog.forEach(p => {
-                if (p.clarity === purity && p.size === size && p.color === color) {
+                if ((p.clarity || "").trim().toUpperCase() === normPurity && 
+                    (p.size || "").trim().toUpperCase() === normSize && 
+                    (p.color || "").trim().toUpperCase() === normColor) {
                     totalCts += p.carats;
                     totalAmt += p.amount;
                 }
@@ -5178,7 +5998,7 @@
                     if (savedValues[`bhav-m2-${i}`] !== undefined && savedValues[`bhav-m2-${i}`] !== "") {
                         bhavM2.value = savedValues[`bhav-m2-${i}`];
                     } else {
-                        bhavM2.value = localStorage.getItem(`last-bhav--2-${purities[i]}`) || "";
+                        bhavM2.value = getStorageItem(`last-bhav--2-${purities[i]}`) || "";
                     }
                 }
                 if (ctP2 && savedValues[`ct-p2-${i}`] !== undefined) ctP2.value = savedValues[`ct-p2-${i}`];
@@ -5186,7 +6006,7 @@
                     if (savedValues[`bhav-p2-${i}`] !== undefined && savedValues[`bhav-p2-${i}`] !== "") {
                         bhavP2.value = savedValues[`bhav-p2-${i}`];
                     } else {
-                        bhavP2.value = localStorage.getItem(`last-bhav-+2-${purities[i]}`) || "";
+                        bhavP2.value = getStorageItem(`last-bhav-+2-${purities[i]}`) || "";
                     }
                 }
             }
@@ -5198,8 +6018,8 @@
         function renderPurityRowHtml(purity, i) {
             // Rates: always readonly, editable only via double-click + admin password
             // Pre-fill from localStorage
-            const savedM2 = localStorage.getItem(`last-bhav--2-${purity}`) || '';
-            const savedP2 = localStorage.getItem(`last-bhav-+2-${purity}`) || '';
+            const savedM2 = getStorageItem(`last-bhav--2-${purity}`) || '';
+            const savedP2 = getStorageItem(`last-bhav-+2-${purity}`) || '';
             const bhavStyle = "background: #f0f4ff; color: #002878; cursor: default; font-weight: bold;";
 
             return `
@@ -5251,10 +6071,10 @@
 
                 // Cache price edits in real-time
                 if (bhavM2El && bhavM2El.value !== "") {
-                    localStorage.setItem(`last-bhav--2-${purities[i]}`, bhavM2El.value);
+                    setStorageItem(`last-bhav--2-${purities[i]}`, bhavM2El.value);
                 }
                 if (bhavP2El && bhavP2El.value !== "") {
-                    localStorage.setItem(`last-bhav-+2-${purities[i]}`, bhavP2El.value);
+                    setStorageItem(`last-bhav-+2-${purities[i]}`, bhavP2El.value);
                 }
 
                 const amt_m2 = ct_m2 * bhav_m2;
@@ -5680,7 +6500,7 @@
         }
 
         function addMasterItem(type) {
-            const val = document.getElementById(`new-${type}-name`).value.trim();
+            const val = document.getElementById(`new-${type}-name`).value.trim().toUpperCase();
             if(!val) return;
             
             if(type === 'shade') ERP_STATE.masters.colors.push(val);
@@ -5738,10 +6558,11 @@
         function getAveragePurchaseRate(size, purity) {
             let totalAmt = 0;
             let totalCts = 0;
+            const normSize = (size || "").replace(/ Sieve| size/gi, '').trim().toUpperCase();
+            const normPurity = (purity || "").trim().toUpperCase();
             ERP_STATE.purchaseLog.forEach(l => {
-                const cleanLogSize = l.size.replace(/ Sieve| size/gi, '').trim();
-                const cleanTargetSize = size.replace(/ Sieve| size/gi, '').trim();
-                if (cleanLogSize === cleanTargetSize && l.clarity === purity) {
+                const cleanLogSize = (l.size || "").replace(/ Sieve| size/gi, '').trim().toUpperCase();
+                if (cleanLogSize === normSize && (l.clarity || "").trim().toUpperCase() === normPurity) {
                     totalAmt += l.amount;
                     totalCts += l.carats;
                 }
@@ -5750,10 +6571,11 @@
                 return totalAmt / totalCts;
             }
             // Dynamic Seed Catalog Averages
-            if (purity === 'WH1' && size === '-2') return 2200;
-            if (purity === 'WH2' && size === '-2') return 1900;
-            if (purity === 'WH1' && size === '+2') return 3100;
-            if (purity === 'FANCY' && size === '+2') return 4500;
+            const normPurityPlain = normPurity.replace(/\s+/g, '');
+            if (normPurityPlain === 'WH1' && normSize === '-2') return 2200;
+            if (normPurityPlain === 'WH2' && normSize === '-2') return 1900;
+            if (normPurityPlain === 'WH1' && normSize === '+2') return 3100;
+            if (normPurityPlain === 'FANCY' && normSize === '+2') return 4500;
             return 2400;
         }
 
@@ -5803,9 +6625,9 @@
                     let carats = 0;
                     for (const [key, qty] of Object.entries(ERP_STATE.stock)) {
                         const [col, sz, pur] = key.split('||');
-                        const cleanSz = sz.replace(/ Sieve| size/gi, '').trim();
-                        const targetCleanSz = size.replace(/ Sieve| size/gi, '').trim();
-                        if (cleanSz === targetCleanSz && pur === number) {
+                        const cleanSz = sz.replace(/ Sieve| size/gi, '').trim().toUpperCase();
+                        const targetCleanSz = size.replace(/ Sieve| size/gi, '').trim().toUpperCase();
+                        if (cleanSz === targetCleanSz && pur.trim().toUpperCase() === number.trim().toUpperCase()) {
                             if (fColor && !col.toLowerCase().includes(fColor)) continue;
                             carats += qty;
                         }
@@ -5887,8 +6709,26 @@
 
         function openQuickMasterModal(type, selectId) {
             activeQuickSelectId = selectId || activeQuickSelectId;
-            document.getElementById('quick-master-title').innerText = `Add New ${type === 'party' ? 'Party' : 'Broker'}`;
-            document.getElementById('quick-master-label').innerText = `${type === 'party' ? 'Party Name' : 'Broker Name'}`;
+            let displayTitle = `Add New ${type.toUpperCase()}`;
+            let displayLabel = `${type.toUpperCase()} Name`;
+            if (type === 'party') {
+                displayTitle = 'Add New Party';
+                displayLabel = 'Party Name';
+            } else if (type === 'broker') {
+                displayTitle = 'Add New Broker';
+                displayLabel = 'Broker Name';
+            } else if (type === 'shade') {
+                displayTitle = 'Add New Shade';
+                displayLabel = 'Shade / Color Name';
+            } else if (type === 'size') {
+                displayTitle = 'Add New Size';
+                displayLabel = 'Size Name';
+            } else if (type === 'number') {
+                displayTitle = 'Add New Number';
+                displayLabel = 'Number / Purity Name';
+            }
+            document.getElementById('quick-master-title').innerText = displayTitle;
+            document.getElementById('quick-master-label').innerText = displayLabel;
             document.getElementById('quick-master-input').value = "";
             document.getElementById('modal-overlay').style.display = 'block';
             document.getElementById('quick-master-modal').style.display = 'block';
@@ -5918,14 +6758,22 @@
         }
 
         function saveQuickMasterItem() {
-            const val = document.getElementById('quick-master-input').value.trim();
+            const val = document.getElementById('quick-master-input').value.trim().toUpperCase();
             if (!val) return;
 
-            const isParty = activeQuickSelectId.includes('party');
-            if (isParty) {
+            if (activeQuickSelectId.includes('party')) {
                 ERP_STATE.masters.parties.push(val);
-            } else {
+            } else if (activeQuickSelectId.includes('broker')) {
                 ERP_STATE.masters.brokers.push(val);
+            } else if (activeQuickSelectId.includes('shade')) {
+                ERP_STATE.masters.colors.push(val);
+            } else if (activeQuickSelectId.includes('size')) {
+                ERP_STATE.masters.sizes.push(val);
+            } else if (activeQuickSelectId.includes('number')) {
+                ERP_STATE.masters.numbers.push(val);
+                if (!ERP_STATE.masters.purities.includes(val)) {
+                    ERP_STATE.masters.purities.push(val);
+                }
             }
 
             refreshAllMasterSelectors();
@@ -5938,7 +6786,30 @@
             const select = document.getElementById(activeQuickSelectId);
             if (select) {
                 select.value = val;
-                select.focus();
+                select.dispatchEvent(new Event('change'));
+                
+                // Auto-advance cursor to avoid re-opening the lookup menu
+                if (activeQuickSelectId === 'pur-form-party') {
+                    focusAndOpenMenu('pur-form-broker', 'broker');
+                } else if (activeQuickSelectId === 'pur-form-broker') {
+                    const daysField = document.getElementById('pur-form-days');
+                    if (daysField) daysField.focus();
+                } else if (activeQuickSelectId === 'sale-form-party') {
+                    focusAndOpenMenu('sale-form-broker', 'broker');
+                } else if (activeQuickSelectId === 'sale-form-broker') {
+                    if (val && val !== '+ Add New Broker') {
+                        openStockPicker();
+                    }
+                } else if (activeQuickSelectId === 'pur-sheet-shade') {
+                    focusAndOpenMenu('pur-sheet-size', 'size');
+                } else if (activeQuickSelectId === 'pur-sheet-size') {
+                    focusAndOpenMenu('pur-sheet-number', 'number');
+                } else if (activeQuickSelectId === 'pur-sheet-number') {
+                    const caratsField = document.getElementById('pur-sheet-carats');
+                    if (caratsField) caratsField.focus();
+                } else {
+                    select.focus();
+                }
             }
             activeQuickSelectId = null;
         }
@@ -6121,47 +6992,181 @@
 
         function focusAndExpand(id) {
             const el = document.getElementById(id);
-            if (el) { el.focus(); expandSelect(el); }
+            if (el) {
+                el.focus();
+                if (el.classList.contains('erp-custom-select')) {
+                    const type = id.includes('party') ? 'party' : 'broker';
+                    openSearchMenu(el, type);
+                } else {
+                    expandSelect(el);
+                }
+            }
         }
 
         // System Keyboard Navigation & Interactive listener
         document.addEventListener('keydown', (e) => {
-            // Escape Key exits to Blank View or closes active modals/popups
-            if (e.key === 'Escape') {
-                const customDialog = document.getElementById('custom-dialog-overlay');
-                const stockPicker = document.getElementById('stock-picker-modal');
-                const quickMaster = document.getElementById('quick-master-modal');
-                const passwordChallenge = document.getElementById('password-challenge-modal');
-                const notepadPopup = document.getElementById('erp-notepad-popup');
-                const calcPopup = document.getElementById('erp-calc-popup');
+            const searchMenu = document.getElementById('erp-custom-search-menu');
+            const customDialog = document.getElementById('custom-dialog-overlay');
+            const stockPicker = document.getElementById('stock-picker-modal');
+            const assortStockPicker = document.getElementById('assort-stock-picker-modal');
+            const quickMaster = document.getElementById('quick-master-modal');
+            const passwordChallenge = document.getElementById('password-challenge-modal');
+            const notepadPopup = document.getElementById('erp-notepad-popup');
+            const calcPopup = document.getElementById('erp-calc-popup');
 
-                const isCustomDialogOpen = customDialog && customDialog.style.display !== 'none' && customDialog.style.display !== '';
-                const isStockPickerOpen = stockPicker && stockPicker.style.display !== 'none' && stockPicker.style.display !== '';
-                const isQuickMasterOpen = quickMaster && quickMaster.style.display !== 'none' && quickMaster.style.display !== '';
-                const isPasswordOpen = passwordChallenge && passwordChallenge.style.display !== 'none' && passwordChallenge.style.display !== '';
-                const isNotepadOpen = notepadPopup && notepadPopup.style.display !== 'none' && notepadPopup.style.display !== '';
-                const isCalcOpen = calcPopup && calcPopup.style.display !== 'none' && calcPopup.style.display !== '';
+            const isSearchMenuOpen = searchMenu && searchMenu.style.display === 'flex';
+            const isCustomDialogOpen = customDialog && customDialog.style.display !== 'none' && customDialog.style.display !== '';
+            const isStockPickerOpen = stockPicker && stockPicker.style.display !== 'none' && stockPicker.style.display !== '';
+            const isAssortStockPickerOpen = assortStockPicker && assortStockPicker.style.display !== 'none' && assortStockPicker.style.display !== '';
+            const isQuickMasterOpen = quickMaster && quickMaster.style.display !== 'none' && quickMaster.style.display !== '';
+            const isPasswordOpen = passwordChallenge && passwordChallenge.style.display !== 'none' && passwordChallenge.style.display !== '';
+            const isNotepadOpen = notepadPopup && notepadPopup.style.display !== 'none' && notepadPopup.style.display !== '';
+            const isCalcOpen = calcPopup && calcPopup.style.display !== 'none' && calcPopup.style.display !== '';
 
-                if (isCustomDialogOpen) {
+            // Handle keydown for custom dialog overlay
+            if (isCustomDialogOpen) {
+                if (e.key === 'Escape') {
                     e.preventDefault();
                     closeCustomDialog('cancel');
                     return;
                 }
-                if (isStockPickerOpen) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    closeCustomDialog('ok');
+                    return;
+                }
+            }
+
+            // Handle keydown for sale stock picker modal
+            if (isStockPickerOpen) {
+                if (e.key === 'Escape') {
                     e.preventDefault();
                     closeStockPicker();
                     return;
                 }
-                if (isQuickMasterOpen) {
+                const body = document.getElementById('stock-picker-body');
+                if (body) {
+                    const rows = body.querySelectorAll('tr');
+                    const hasStock = rows.length > 0 && !rows[0].innerText.includes('No stock available');
+                    if (hasStock) {
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            stockPickerSelectedIndex++;
+                            if (stockPickerSelectedIndex >= rows.length) {
+                                stockPickerSelectedIndex = 0;
+                            }
+                            updateStockPickerSelection();
+                            return;
+                        }
+                        if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            stockPickerSelectedIndex--;
+                            if (stockPickerSelectedIndex < 0) {
+                                stockPickerSelectedIndex = rows.length - 1;
+                            }
+                            updateStockPickerSelection();
+                            return;
+                        }
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            let idx = stockPickerSelectedIndex;
+                            if (idx === -1) idx = 0;
+                            const row = rows[idx];
+                            if (row) {
+                                const btn = row.querySelector('button');
+                                if (btn) btn.click();
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Handle keydown for assort stock picker modal
+            if (isAssortStockPickerOpen) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeAssortStockPicker();
+                    return;
+                }
+                const body = document.getElementById('assort-stock-picker-body');
+                if (body) {
+                    const rows = body.querySelectorAll('tr');
+                    const hasStock = rows.length > 0 && !rows[0].innerText.includes('No stock available');
+                    if (hasStock) {
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            assortStockPickerSelectedIndex++;
+                            if (assortStockPickerSelectedIndex >= rows.length) {
+                                assortStockPickerSelectedIndex = 0;
+                            }
+                            updateAssortStockPickerSelection();
+                            return;
+                        }
+                        if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            assortStockPickerSelectedIndex--;
+                            if (assortStockPickerSelectedIndex < 0) {
+                                assortStockPickerSelectedIndex = rows.length - 1;
+                            }
+                            updateAssortStockPickerSelection();
+                            return;
+                        }
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            let idx = assortStockPickerSelectedIndex;
+                            if (idx === -1) idx = 0;
+                            const row = rows[idx];
+                            if (row) {
+                                const btn = row.querySelector('button');
+                                if (btn) btn.click();
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Handle keydown for quick master creation modal
+            if (isQuickMasterOpen) {
+                if (e.key === 'Escape') {
                     e.preventDefault();
                     closeQuickMasterModal();
                     return;
                 }
-                if (isPasswordOpen) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveQuickMasterItem();
+                    return;
+                }
+            }
+
+            // Handle keydown for password challenge verification modal
+            if (isPasswordOpen) {
+                if (e.key === 'Escape') {
                     e.preventDefault();
                     cancelPasswordChallenge();
                     return;
                 }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitPasswordChallenge();
+                    return;
+                }
+            }
+
+            // Handle keydown for custom searchable selection menu
+            if (isSearchMenuOpen) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeSearchMenu();
+                    if (activeSearchMenuTarget) activeSearchMenuTarget.focus();
+                    return;
+                }
+            }
+
+            // Handle default Escape key actions
+            if (e.key === 'Escape') {
                 if (isNotepadOpen) {
                     e.preventDefault();
                     notepadPopup.style.display = 'none';
@@ -6355,7 +7360,7 @@
             const activeView = document.querySelector('.app-view.active-view');
             if (!activeView) return;
 
-            const focusables = Array.from(activeView.querySelectorAll('input:not([readonly]):not([disabled]), select:not([disabled]), button:not([disabled])'))
+            const focusables = Array.from(activeView.querySelectorAll('input:not([readonly]):not([disabled]), input.erp-custom-select:not([disabled]), select:not([disabled]), button:not([disabled])'))
                                     .filter(el => el.offsetWidth > 0 && el.offsetHeight > 0);
 
             const index = focusables.indexOf(document.activeElement);
@@ -6416,7 +7421,14 @@
                     type === 'party' ? 'parties' : 
                     type + 's'
                 ];
-                sel.innerHTML = arr.map(i => `<option value="${i.replace(/"/g,'&quot;')}">${i}</option>`).join('');
+                if (sel.tagName === 'SELECT') {
+                    sel.innerHTML = arr.map(i => `<option value="${i.replace(/"/g,'&quot;')}">${i}</option>`).join('');
+                } else if (sel.tagName === 'INPUT') {
+                    if (sel.value && !arr.includes(sel.value)) {
+                        sel.value = "";
+                        sel.dispatchEvent(new Event('change'));
+                    }
+                }
             });
         }
 
@@ -6426,7 +7438,26 @@
         }
 
         // ── Sale Stock Picker ────────────────────────────────────
+        let stockPickerSelectedIndex = -1;
+
+        function updateStockPickerSelection() {
+            const body = document.getElementById('stock-picker-body');
+            if (!body) return;
+            const rows = body.querySelectorAll('tr');
+            rows.forEach((row, idx) => {
+                if (idx === stockPickerSelectedIndex) {
+                    row.style.background = '#eef2fa';
+                    row.style.fontWeight = 'bold';
+                    row.scrollIntoView({ block: 'nearest' });
+                } else {
+                    row.style.background = '';
+                    row.style.fontWeight = '';
+                }
+            });
+        }
+
         function openStockPicker() {
+            stockPickerSelectedIndex = -1;
             const body = document.getElementById('stock-picker-body');
             if (!body) return;
 
@@ -6490,6 +7521,140 @@
         function closeStockPicker() {
             document.getElementById('stock-picker-overlay').style.display = 'none';
             document.getElementById('stock-picker-modal').style.display = 'none';
+        }
+
+        // Assortment Stock Picker Functions
+        let assortStockPickerSelectedIndex = -1;
+
+        function updateAssortStockPickerSelection() {
+            const body = document.getElementById('assort-stock-picker-body');
+            if (!body) return;
+            const rows = body.querySelectorAll('tr');
+            rows.forEach((row, idx) => {
+                if (idx === assortStockPickerSelectedIndex) {
+                    row.style.background = '#eef2fa';
+                    row.style.fontWeight = 'bold';
+                    row.scrollIntoView({ block: 'nearest' });
+                } else {
+                    row.style.background = '';
+                    row.style.fontWeight = '';
+                }
+            });
+        }
+
+        function openAssortStockPicker() {
+            assortStockPickerSelectedIndex = -1;
+            const body = document.getElementById('assort-stock-picker-body');
+            if (!body) return;
+
+            let html = '';
+            let hasStock = false;
+
+            for (const [key, carats] of Object.entries(ERP_STATE.stock)) {
+                if (carats <= 0) continue;
+                hasStock = true;
+                const [color, size, purity] = key.split('||');
+                html += `
+                    <tr>
+                        <td>${color}</td>
+                        <td>${size}</td>
+                        <td><span style="background:rgba(0,0,0,0.04); padding:2px 6px; border-radius:4px; font-weight:600;">${purity}</span></td>
+                        <td style="text-align:right; font-weight:bold;">${carats.toFixed(3)}</td>
+                        <td style="text-align:center;"><button type="button" class="erp-btn" onclick="pickStockForAssort('${key}', ${carats})" style="padding:1px 6px; font-weight:bold; font-size:0.8rem;">Sel</button></td>
+                    </tr>
+                `;
+            }
+
+            body.innerHTML = hasStock ? html : '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">No stock available.</td></tr>';
+
+            // Reset manual picker inputs
+            const manualSizeSelect = document.getElementById('assort-picker-manual-size');
+            if (manualSizeSelect) {
+                if (ERP_STATE.masters.sizes.length > 0) {
+                    manualSizeSelect.value = ERP_STATE.masters.sizes[0];
+                }
+            }
+            const manualCaratsInput = document.getElementById('assort-picker-manual-carats');
+            if (manualCaratsInput) manualCaratsInput.value = '';
+
+            document.getElementById('assort-stock-picker-overlay').style.display = 'block';
+            document.getElementById('assort-stock-picker-modal').style.display = 'block';
+        }
+
+        function closeAssortStockPicker() {
+            document.getElementById('assort-stock-picker-overlay').style.display = 'none';
+            document.getElementById('assort-stock-picker-modal').style.display = 'none';
+        }
+
+        function pickStockForAssort(key, carats) {
+            const parts = key.split('||');
+            const color = parts[0];
+            const size = parts[1];
+            const purity = parts[2];
+
+            // Set carats
+            const caratsField = document.getElementById('assort-caratsGiven');
+            if (caratsField) caratsField.value = carats.toFixed(3);
+
+            // Clean size to match sieve size selection
+            const cleanSize = (size || "").replace(/ Sieve| size/gi, '').trim().toUpperCase();
+            
+            // Try to match in assort-sieveSize options
+            const sieveSelect = document.getElementById('assort-sieveSize');
+            if (sieveSelect) {
+                let matched = false;
+                for (let i = 0; i < sieveSelect.options.length; i++) {
+                    const optVal = sieveSelect.options[i].value.trim().toUpperCase();
+                    if (optVal === cleanSize) {
+                        sieveSelect.selectedIndex = i;
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+
+            // Populate remarks with stock lot description
+            const remarksField = document.getElementById('assort-packetRemarks');
+            if (remarksField) {
+                remarksField.value = `Stock Lot: ${color} ${size} ${purity}`;
+            }
+
+            closeAssortStockPicker();
+        }
+
+        function applyAssortManualSelection() {
+            const size = document.getElementById('assort-picker-manual-size').value;
+            const caratsVal = parseFloat(document.getElementById('assort-picker-manual-carats').value) || 0;
+
+            if (caratsVal <= 0) {
+                showCustomAlert("Validation Error", "Please enter a valid carat weight.", "warning");
+                return;
+            }
+
+            // Set carats
+            const caratsField = document.getElementById('assort-caratsGiven');
+            if (caratsField) caratsField.value = caratsVal.toFixed(3);
+
+            // Set sieve size
+            const cleanSize = (size || "").replace(/ Sieve| size/gi, '').trim().toUpperCase();
+            const sieveSelect = document.getElementById('assort-sieveSize');
+            if (sieveSelect) {
+                for (let i = 0; i < sieveSelect.options.length; i++) {
+                    const optVal = sieveSelect.options[i].value.trim().toUpperCase();
+                    if (optVal === cleanSize) {
+                        sieveSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            // Populate remarks
+            const remarksField = document.getElementById('assort-packetRemarks');
+            if (remarksField) {
+                remarksField.value = `Manual Entry Sieve: ${size}`;
+            }
+
+            closeAssortStockPicker();
         }
 
         // ── Diamond Assortment Desk Controller ─────────────────────────────
@@ -7093,8 +8258,7 @@
             ERP_STATE.manualBackups.push(newBackup);
             ERP_STATE.lastManualBackupTime = now.getTime();
             
-            localStorage.setItem('sms_manual_backups', JSON.stringify(ERP_STATE.manualBackups));
-            localStorage.setItem('sms_last_manual_backup_time', String(ERP_STATE.lastManualBackupTime));
+            saveDatabaseState();
             
             renderBackupHistory();
             updateBackupReminderUI();
@@ -7127,7 +8291,7 @@
             
             showCustomConfirm('Delete Backup', `Are you sure you want to delete backup [${backup.name}]? This is permanent.`, () => {
                 ERP_STATE.manualBackups = ERP_STATE.manualBackups.filter(b => b.id !== id);
-                localStorage.setItem('sms_manual_backups', JSON.stringify(ERP_STATE.manualBackups));
+            saveDatabaseState();
                 renderBackupHistory();
                 showCustomAlert("Deleted", "Backup entry deleted successfully.", "success");
             }, null, 'warning');
@@ -7247,7 +8411,7 @@
         function toggleShortcutActive(action, isChecked) {
             if (ERP_STATE.shortcuts && ERP_STATE.shortcuts[action]) {
                 ERP_STATE.shortcuts[action].active = isChecked;
-                localStorage.setItem('sms_settings_shortcuts', JSON.stringify(ERP_STATE.shortcuts));
+                saveDatabaseState();
             }
         }
 
@@ -7258,7 +8422,7 @@
                 ERP_STATE.shortcuts[action].altKey = false;
                 ERP_STATE.shortcuts[action].shiftKey = false;
                 ERP_STATE.shortcuts[action].display = "";
-                localStorage.setItem('sms_settings_shortcuts', JSON.stringify(ERP_STATE.shortcuts));
+                saveDatabaseState();
                 renderShortcutsTable();
             }
         }
@@ -7292,7 +8456,7 @@
                     display: displayStr
                 });
                 
-                localStorage.setItem('sms_settings_shortcuts', JSON.stringify(ERP_STATE.shortcuts));
+                saveDatabaseState();
                 
                 cleanup();
                 renderShortcutsTable();
@@ -7667,6 +8831,260 @@
                 showCustomAlert("Error", "Failed to copy payload.", "error");
             });
         }
+
+        // ── Custom Searchable Suggestion Dropdown Popups Controller ──
+        let activeSearchMenuTarget = null;
+        let activeSearchMenuType = '';
+        let searchMenuSelectedIndex = -1;
+
+        function openSearchMenu(inputEl, type) {
+            if (inputEl.disabled) return;
+
+            const popup = document.getElementById('erp-custom-search-menu');
+            if (activeSearchMenuTarget === inputEl && activeSearchMenuType === type) {
+                if (popup && popup.style.display === 'flex') {
+                    return; // Already open for this target
+                }
+            }
+            
+            // Close any existing open search menus first
+            closeSearchMenu();
+
+            activeSearchMenuTarget = inputEl;
+            activeSearchMenuType = type;
+            searchMenuSelectedIndex = -1;
+
+            const titleEl = document.getElementById('search-menu-title');
+            const labelEl = document.getElementById('search-menu-label');
+            const inputField = document.getElementById('search-menu-input');
+
+            if (type === 'party') {
+                titleEl.innerText = "SEARCH PARTY";
+                labelEl.innerText = "Party Name";
+            } else if (type === 'broker') {
+                titleEl.innerText = "SEARCH BROKER";
+                labelEl.innerText = "Broker Name";
+            } else if (type === 'shade') {
+                titleEl.innerText = "SEARCH SHADE";
+                labelEl.innerText = "Shade / Color";
+            } else if (type === 'size') {
+                titleEl.innerText = "SEARCH SIZE";
+                labelEl.innerText = "Size";
+            } else if (type === 'number') {
+                titleEl.innerText = "SEARCH NUMBER";
+                labelEl.innerText = "Number / Purity";
+            } else if (type === 'purity') {
+                titleEl.innerText = "SEARCH PURITY";
+                labelEl.innerText = "Purity";
+            }
+
+            inputField.value = "";
+
+            // Bounding box positioning with right edge clipping safety
+            const rect = inputEl.getBoundingClientRect();
+            if (popup) {
+                popup.style.display = 'flex';
+                popup.style.position = 'absolute';
+                popup.style.top = (window.scrollY + rect.bottom + 2) + 'px';
+                
+                // Match the exact input element width for size and purity types, otherwise minimum 320px
+                const matchInputWidth = (type === 'size' || type === 'number' || type === 'purity');
+                const popupWidth = matchInputWidth ? rect.width : Math.max(rect.width, 320);
+                
+                let leftPos = window.scrollX + rect.left;
+                const viewportWidth = window.innerWidth;
+                
+                if (rect.left + popupWidth > viewportWidth) {
+                    leftPos = window.scrollX + viewportWidth - popupWidth - 10;
+                }
+                
+                popup.style.left = Math.max(0, leftPos) + 'px';
+                popup.style.width = popupWidth + 'px';
+            }
+
+            populateSearchMenuOptions();
+
+            setTimeout(() => {
+                if (inputField) inputField.focus();
+            }, 50);
+        }
+
+        function populateSearchMenuOptions() {
+            const container = document.getElementById('search-menu-options');
+            if (!container) return;
+            const inputField = document.getElementById('search-menu-input');
+            const filterText = inputField ? inputField.value.trim().toLowerCase() : '';
+            
+            let list = [];
+            let addNewText = '';
+            if (activeSearchMenuType === 'party') {
+                list = ERP_STATE.masters.parties || [];
+                addNewText = '+ Add New Party';
+            } else if (activeSearchMenuType === 'broker') {
+                list = ERP_STATE.masters.brokers || [];
+                addNewText = '+ Add New Broker';
+            } else if (activeSearchMenuType === 'shade') {
+                list = ERP_STATE.masters.colors || [];
+                addNewText = '+ Add New Shade';
+            } else if (activeSearchMenuType === 'size') {
+                list = ERP_STATE.masters.sizes || [];
+                addNewText = '+ Add New Size';
+            } else if (activeSearchMenuType === 'number') {
+                list = ERP_STATE.masters.numbers || [];
+                addNewText = '+ Add New Number';
+            } else if (activeSearchMenuType === 'purity') {
+                list = ERP_STATE.masters.purities || [];
+                addNewText = '+ Add New Purity';
+            }
+
+            let filteredList = list.filter(item => {
+                if (!item) return false;
+                return item.toString().toLowerCase().includes(filterText);
+            });
+
+            let html = '';
+            
+            // Add New option at the top (only for invoice entry forms)
+            const isEntryInput = activeSearchMenuTarget && (activeSearchMenuTarget.id.startsWith('pur-') || activeSearchMenuTarget.id.startsWith('sale-'));
+            if (addNewText && isEntryInput && addNewText.toLowerCase().includes(filterText)) {
+                html += `<div class="search-menu-opt add-new-opt" onclick="selectSearchMenuOption('${addNewText.replace(/'/g, "\\'")}')">${addNewText}</div>`;
+            }
+
+            filteredList.forEach(item => {
+                if (item) {
+                    const escapedVal = item.toString().replace(/'/g, "\\'");
+                    html += `<div class="search-menu-opt" onclick="selectSearchMenuOption('${escapedVal}')">${item}</div>`;
+                }
+            });
+
+            container.innerHTML = html;
+            searchMenuSelectedIndex = -1;
+        }
+
+        function filterSearchMenuOptions() {
+            populateSearchMenuOptions();
+        }
+
+        function selectSearchMenuOption(value) {
+            if (!activeSearchMenuTarget) return;
+
+            if (value.startsWith('+ Add New')) {
+                const type = activeSearchMenuType;
+                const targetId = activeSearchMenuTarget.id;
+                closeSearchMenu();
+                
+                openQuickMasterModal(type, targetId);
+                return;
+            }
+
+            activeSearchMenuTarget.value = value;
+            activeSearchMenuTarget.dispatchEvent(new Event('change'));
+
+            const targetId = activeSearchMenuTarget.id;
+            closeSearchMenu();
+
+            // Auto navigate to next input field
+            if (targetId === 'pur-form-party') {
+                focusAndOpenMenu('pur-form-broker', 'broker');
+            } else if (targetId === 'pur-form-broker') {
+                const daysField = document.getElementById('pur-form-days');
+                if (daysField) daysField.focus();
+            } else if (targetId === 'sale-form-party') {
+                focusAndOpenMenu('sale-form-broker', 'broker');
+            } else if (targetId === 'sale-form-broker') {
+                // For sales broker selection, trigger stock picker
+                const val = document.getElementById('sale-form-broker').value;
+                if (val && val !== '+ Add New Broker') {
+                    openStockPicker();
+                }
+            } else if (targetId === 'pur-sheet-shade') {
+                focusAndOpenMenu('pur-sheet-size', 'size');
+            } else if (targetId === 'pur-sheet-size') {
+                focusAndOpenMenu('pur-sheet-number', 'number');
+            } else if (targetId === 'pur-sheet-number') {
+                const caratsField = document.getElementById('pur-sheet-carats');
+                if (caratsField) caratsField.focus();
+            }
+        }
+
+        function focusAndOpenMenu(id, type) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.focus();
+                openSearchMenu(el, type);
+            }
+        }
+
+        function closeSearchMenu() {
+            const popup = document.getElementById('erp-custom-search-menu');
+            if (popup) popup.style.display = 'none';
+            activeSearchMenuTarget = null;
+            activeSearchMenuType = '';
+            searchMenuSelectedIndex = -1;
+        }
+
+        // Suggestion keydown navigation and outside click handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('search-menu-input');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', (e) => {
+                    const container = document.getElementById('search-menu-options');
+                    const options = container.querySelectorAll('.search-menu-opt');
+                    if (options.length === 0) return;
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        searchMenuSelectedIndex++;
+                        if (searchMenuSelectedIndex >= options.length) {
+                            searchMenuSelectedIndex = 0;
+                        }
+                        updateSearchMenuSelection(options);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        searchMenuSelectedIndex--;
+                        if (searchMenuSelectedIndex < 0) {
+                            searchMenuSelectedIndex = options.length - 1;
+                        }
+                        updateSearchMenuSelection(options);
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let indexToSelect = searchMenuSelectedIndex;
+                        if (indexToSelect === -1) {
+                            indexToSelect = 0;
+                        }
+                        const opt = options[indexToSelect];
+                        if (opt) {
+                            opt.click();
+                        }
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeSearchMenu();
+                        if (activeSearchMenuTarget) activeSearchMenuTarget.focus();
+                    }
+                });
+            }
+
+            document.addEventListener('mousedown', (e) => {
+                const popup = document.getElementById('erp-custom-search-menu');
+                if (popup && popup.style.display === 'flex') {
+                    if (!popup.contains(e.target) && !e.target.classList.contains('erp-custom-select') && e.target !== activeSearchMenuTarget) {
+                        closeSearchMenu();
+                    }
+                }
+            });
+        });
+
+        function updateSearchMenuSelection(options) {
+            options.forEach((opt, idx) => {
+                if (idx === searchMenuSelectedIndex) {
+                    opt.classList.add('selected');
+                    opt.scrollIntoView({ block: 'nearest' });
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
     </script>
 
     <!-- Real-time SVG Analytics Side Drawer -->
@@ -7708,6 +9126,20 @@
                     <button type="button" class="erp-btn" id="custom-dialog-btn-cancel" onclick="closeCustomDialog('cancel')" style="background: rgba(0,0,0,0.05); border-color: #b0b0a8; color: var(--text-main); font-weight: bold; font-size: 0.8rem; border-radius: 4px;">Cancel</button>
                     <button type="button" class="erp-btn" id="custom-dialog-btn-ok" onclick="closeCustomDialog('ok')" style="background: #002878; border-color: #002878; color: white; font-weight: bold; font-size: 0.8rem; border-radius: 4px;">Yes, Proceed</button>
                 </div>
+            </div>
+        </div>
+    </div>
+    <!-- Custom Searchable Suggestion Dropdown Popups -->
+    <div id="erp-custom-search-menu" class="erp-search-menu-popup" style="display: none; position: absolute; z-index: 10000;">
+        <div class="search-menu-header">
+            <span id="search-menu-title">SEARCH PARTY</span>
+            <span class="search-menu-close" onclick="closeSearchMenu()">✖</span>
+        </div>
+        <div class="search-menu-body">
+            <label id="search-menu-label">Party Name</label>
+            <input type="text" id="search-menu-input" autocomplete="off" oninput="filterSearchMenuOptions()">
+            <div class="search-menu-options-container" id="search-menu-options">
+                <!-- Populated dynamically -->
             </div>
         </div>
     </div>
