@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMS ERP</title>
-    <!-- Firebase core SDK and Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <!-- Local Caching Database -->
     <style>
         :root {
             --card-bg: #ffffff;
@@ -18,6 +20,15 @@
             --danger-color: #e74c3c;
             --warning-color: #f1c40f;
             --sidebar-width: 130px;
+        }
+
+        @keyframes erp-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .erp-spin-icon {
+            animation: erp-spin 1s linear infinite;
+            display: inline-block;
         }
 
         input.erp-custom-select {
@@ -2976,18 +2987,7 @@
                                 <button class="erp-btn" onclick="rebuildStockFromLogs()" style="font-size:0.82rem; padding:8px 15px; background: #002878; border-color: #002878; color: white; font-weight:bold; cursor:pointer; width: 100%;">🔄 Rebuild Stock from Logs</button>
                             </div>
 
-                            <!-- Firebase Cloud Backup Status Card -->
-                            <div style="margin-top: 12px; padding: 10px; background: #f9f9f9; border: 1px solid #b0b0a8; border-radius: 4px; font-size: 0.78rem;">
-                                <h4 style="font-size: 0.85rem; margin-bottom: 6px; color: #002878; font-weight: bold; display: flex; align-items: center; justify-content: space-between;">
-                                    <span>☁ Cloud Sync (Firebase)</span>
-                                    <span id="firebase-status-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #7f8c8d;"></span>
-                                </h4>
-                                <div style="color: var(--text-muted); font-size: 0.72rem; line-height: 1.4; margin-bottom: 6px;">
-                                    Status: <strong id="firebase-status-text" style="color: #7f8c8d;">Offline</strong><br>
-                                    Database ID: <strong>sms-j-123</strong>
-                                </div>
-                                <button class="erp-btn" onclick="triggerFirebaseForceSync()" style="font-size: 0.72rem; padding: 3px 8px; background: #002878; border-color: #002878; color: white; font-weight: bold; cursor: pointer; width: 100%;">Sync Now</button>
-                            </div>
+
 
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #b0b0a8;">
                                 <h4 style="font-size: 0.85rem; margin-bottom: 6px; color: #1e272e; font-weight: bold;">🔢 Invoice Counters</h4>
@@ -3108,69 +3108,317 @@
     <div id="admin-login-overlay">
         <div id="admin-login-box">
             <div class="login-header">श्री</div>
-            <div class="login-body">
-                <div style="text-align: center; font-size: 2.2rem; font-weight: 800; color: #112230; margin-bottom: 25px; letter-spacing: 2px;">SMS</div>
-                <div class="login-field">
-                    <label>User Name</label>
-                    <div class="login-field-wrap">
-                        <input type="text" id="login-username" value="" autocomplete="username" placeholder="Enter User Name" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('login-password').focus();}">
-                    </div>
-                </div>
-                <div class="login-field">
-                    <label>Password</label>
-                    <div class="login-field-wrap">
-                        <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doAdminLogin()">
-                        <button class="eye-btn" onclick="togglePassVis('login-password', this)" type="button">👁️</button>
-                    </div>
-                </div>
-                <button id="admin-login-btn" onclick="doAdminLogin()">LOGIN</button>
-                <div id="admin-login-error"></div>
-                <p style="margin-top:14px; font-size:0.75rem; color:#666666; text-align:center;">Default: <strong style="color:#333;">admin</strong> / <strong style="color:#333;">admin123</strong> &nbsp;|&nbsp; <span style="color:#002878; cursor:pointer; text-decoration:underline;" onclick="resetAdminToDefault()">Reset to Defaults</span></p>
+            <div class="login-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px;">
+                <div style="text-align: center; font-size: 2.2rem; font-weight: 800; color: #112230; margin-bottom: 35px; letter-spacing: 2px;">SMS ERP</div>
+                
+                <button id="google-login-btn" onclick="doGoogleLogin()" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 12px;
+                    background: #ffffff;
+                    color: #2c3e50;
+                    border: 1px solid #b0b0a8;
+                    padding: 12px 24px;
+                    font-size: 0.95rem;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    width: 100%;
+                    max-width: 280px;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+                " onmouseover="this.style.background='#f5f5f0'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.12)'" onmouseout="this.style.background='#ffffff'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114A5.772 5.772 0 0 1 8.2 12.75a5.772 5.772 0 0 1 5.79-5.764c1.458 0 2.783.52 3.813 1.385l3.08-3.08A9.82 9.82 0 0 0 13.99 2 9.873 9.873 0 0 0 4.1 11.875a9.873 9.873 0 0 0 9.89 9.875c5.38 0 9.8-3.9 9.8-9.875 0-.585-.05-1.16-.145-1.59H12.24z"/>
+                        <path fill="#4285F4" d="M23.645 10.285H12.24V14.4h6.887a7.27 7.27 0 0 1-3.137 4.114l3.18 2.465c3.67-3.39 5.475-8.38 5.475-10.694 0-.585-.05-1.16-.145-1.59z"/>
+                        <path fill="#FBBC05" d="M13.99 21.75c2.617 0 5.048-.905 6.887-2.465l-3.18-2.465a5.753 5.753 0 0 1-3.707.816 5.77 5.77 0 0 1-5.79-5.764c0-.365.035-.72.1-1.065L5.12 7.74a9.825 9.825 0 0 0-.02 4.135A9.873 9.873 0 0 0 13.99 21.75z"/>
+                        <path fill="#34A853" d="M8.2 12.75a5.772 5.772 0 0 1 5.79-5.764c1.458 0 2.783.52 3.813 1.385l3.08-3.08A9.82 9.82 0 0 0 13.99 2C8.61 2 4.1 6.425 4.1 11.875c0 .3.015.6.04.896l4.06-3.021z"/>
+                    </svg>
+                    SIGN IN WITH GOOGLE
+                </button>
+                <div id="admin-login-error" style="color: #e74c3c; margin-top: 15px; font-size: 0.85rem; font-weight: bold; text-align: center;"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Global LocalStorage & SessionStorage Disabler Sandbox
-        try {
-            const emptyStorage = {
-                getItem: (key) => null,
-                setItem: (key, val) => {},
-                removeItem: (key) => {},
-                clear: () => {},
-                key: (idx) => null,
-                length: 0
-            };
-            Object.defineProperty(window, 'localStorage', {
-                value: emptyStorage,
-                writable: false,
-                configurable: true
-            });
-            Object.defineProperty(window, 'sessionStorage', {
-                value: emptyStorage,
-                writable: false,
-                configurable: true
-            });
-        } catch (e) {
-            console.warn("Storage override warning:", e);
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAA72jfISxLmlaWvU1q--dOAIXP5-6OF0U",
+            authDomain: "sms-j-123.firebaseapp.com",
+            databaseURL: "https://sms-j-123-default-rtdb.firebaseio.com",
+            projectId: "sms-j-123",
+            storageBucket: "sms-j-123.firebasestorage.app",
+            messagingSenderId: "793800397695",
+            appId: "1:793800397695:web:0c869d6c578eb4b165804a"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function doGoogleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const errEl = document.getElementById('admin-login-error');
+            if (errEl) errEl.innerText = "Connecting to Google...";
+
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    const email = user.email.toLowerCase();
+
+                    // Check authorization list in Firestore
+                    if (errEl) errEl.innerText = "Verifying authorization...";
+                    db.collection("authorized_users").doc(email).get()
+                        .then((doc) => {
+                            if (doc.exists) {
+                                // Authorized!
+                                ERP_STATE.isLoggedIn = true;
+                                ERP_STATE.loginTime = Date.now();
+                                ERP_STATE.currentUserEmail = email;
+
+                                // Local Session Cache to bypass login screen on reload
+                                localStorage.setItem('sms_is_logged_in', 'true');
+                                localStorage.setItem('sms_login_time', ERP_STATE.loginTime.toString());
+                                localStorage.setItem('sms_user_email', email);
+
+                                saveDatabaseState();
+
+                                document.getElementById('admin-login-overlay').style.display = 'none';
+                                switchView('view-blank');
+                                if (errEl) errEl.innerText = "";
+
+                                // Start real-time sync listeners
+                                startFirebaseSync();
+                            } else {
+                                // Access Denied
+                                firebase.auth().signOut();
+                                if (errEl) errEl.innerText = "❌ Access Denied: Your email is not authorized.";
+                                showCustomAlert("Access Denied", "❌ This Google account is not authorized to access this ERP.", "error");
+                            }
+                        })
+                        .catch((err) => {
+                            console.error("Firestore auth query failed", err);
+                            firebase.auth().signOut();
+                            if (errEl) errEl.innerText = "❌ Verification failed. Check connection.";
+                        });
+                })
+                .catch((error) => {
+                    console.error("Google login failed", error);
+                    if (errEl) errEl.innerText = "❌ Google sign-in failed. Try again.";
+                });
         }
 
-        // Initialize Firebase SDK
-        let db = null;
-        try {
-            const firebaseConfig = {
-                apiKey: "AIzaSyAA72jfISxLmlaWvU1q--dOAIXP5-6OF0U",
-                authDomain: "sms-j-123.firebaseapp.com",
-                projectId: "sms-j-123",
-                storageBucket: "sms-j-123.firebasestorage.app",
-                messagingSenderId: "793800397695",
-                appId: "1:793800397695:web:0c869d6c578eb4b165804a"
-            };
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-        } catch (e) {
-            console.error("Firebase init failed:", e);
+        let firebaseSyncStarted = false;
+        function startFirebaseSync() {
+            if (firebaseSyncStarted) return;
+            firebaseSyncStarted = true;
+
+            const email = ERP_STATE.currentUserEmail || localStorage.getItem('sms_user_email');
+            if (!email) return;
+
+            // 1. Listen to authorized_users to check if we get deleted/de-authorized dynamically
+            db.collection("authorized_users").doc(email.toLowerCase()).onSnapshot((doc) => {
+                if (!doc.exists) {
+                    doAdminLogout();
+                    showCustomAlert("Access Revoked", "🔒 Your account access has been revoked by the administrator.", "warning");
+                }
+            });
+
+            // 2. Listen to settings/general
+            db.collection("settings").doc("general").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.editPassword) ERP_STATE.editPassword = data.editPassword;
+                    if (data.autoLogoutHours) ERP_STATE.autoLogoutHours = data.autoLogoutHours;
+                    if (data.rateDeviationMode) ERP_STATE.rateDeviationMode = data.rateDeviationMode;
+                    if (data.rateDeviationVal !== undefined) ERP_STATE.rateDeviationVal = data.rateDeviationVal;
+                    if (data.notepadText !== undefined) ERP_STATE.notepadText = data.notepadText;
+                    if (data.invoiceCounters) ERP_STATE.invoiceCounters = data.invoiceCounters;
+                    if (data.lastBhav) ERP_STATE.lastBhav = data.lastBhav;
+                    
+                    // Sync settings UI fields if active
+                    const logoutHoursInput = document.getElementById('profile-logout-hours');
+                    if (logoutHoursInput) logoutHoursInput.value = ERP_STATE.autoLogoutHours;
+                    const deviationModeSelect = document.getElementById('profile-deviation-mode');
+                    if (deviationModeSelect) deviationModeSelect.value = ERP_STATE.rateDeviationMode;
+                    const deviationInput = document.getElementById('profile-deviation-val');
+                    if (deviationInput) deviationInput.value = ERP_STATE.rateDeviationVal;
+                }
+            });
+
+            // 3. Listen to settings/assort
+            db.collection("settings").doc("assort").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.assortLearningMatrix) ERP_STATE.assortLearningMatrix = data.assortLearningMatrix;
+                    if (data.assortStaff) ERP_STATE.assortStaff = data.assortStaff;
+                    if (data.assortLostFound) ERP_STATE.assortLostFound = data.assortLostFound;
+                }
+            });
+
+            // 4. Listen to masters/data
+            db.collection("masters").doc("data").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.colors) ERP_STATE.masters.colors = data.colors;
+                    if (data.sizes) ERP_STATE.masters.sizes = data.sizes;
+                    if (data.numbers) ERP_STATE.masters.numbers = data.numbers;
+                    if (data.purities) ERP_STATE.masters.purities = data.purities;
+                    if (data.seriesPurities) ERP_STATE.masters.seriesPurities = data.seriesPurities;
+                    if (data.parties) ERP_STATE.masters.parties = data.parties;
+                    if (data.brokers) ERP_STATE.masters.brokers = data.brokers;
+                    refreshAllMasterSelectors();
+                }
+            });
+
+            // 5. Listen to purchases collection
+            db.collection("purchases").onSnapshot((snapshot) => {
+                const flatLog = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const items = data.items || [];
+                    items.forEach(itm => {
+                        flatLog.push({
+                            invoice: data.invoice,
+                            date: data.date,
+                            party: data.party,
+                            broker: data.broker,
+                            color: itm.color,
+                            size: itm.size,
+                            clarity: itm.clarity,
+                            carats: itm.carats,
+                            rate: itm.rate,
+                            amount: itm.amount,
+                            remark: itm.remark || "",
+                            stockId: itm.stockId,
+                            shape: itm.shape || "ROUND",
+                            pcs: itm.pcs || 0,
+                            sNo: itm.sNo
+                        });
+                    });
+                });
+                flatLog.sort((a, b) => {
+                    if (a.date !== b.date) return b.date.localeCompare(a.date);
+                    if (a.invoice !== b.invoice) return b.invoice.localeCompare(a.invoice);
+                    return a.sNo - b.sNo;
+                });
+                ERP_STATE.purchaseLog = flatLog;
+                rebuildStockAndUI();
+            });
+
+            // 6. Listen to sales collection
+            db.collection("sales").onSnapshot((snapshot) => {
+                const flatLog = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const items = data.items || [];
+                    items.forEach(itm => {
+                        flatLog.push({
+                            invoice: data.invoice,
+                            date: data.date,
+                            party: data.party,
+                            broker: data.broker,
+                            color: itm.color,
+                            size: itm.size,
+                            clarity: itm.clarity,
+                            carats: itm.carats,
+                            rate: itm.rate,
+                            amount: itm.amount,
+                            remark: itm.remark || "",
+                            stockId: itm.stockId,
+                            shape: itm.shape || "ROUND",
+                            pcs: itm.pcs || 0,
+                            sNo: itm.sNo
+                        });
+                    });
+                });
+                flatLog.sort((a, b) => {
+                    if (a.date !== b.date) return b.date.localeCompare(a.date);
+                    if (a.invoice !== b.invoice) return b.invoice.localeCompare(a.invoice);
+                    return a.sNo - b.sNo;
+                });
+                ERP_STATE.salesLog = flatLog;
+                rebuildStockAndUI();
+            });
+
+            // 7. Listen to rojmel collection
+            db.collection("rojmel").onSnapshot((snapshot) => {
+                const list = [];
+                snapshot.forEach(doc => list.push(doc.data()));
+                list.sort((a, b) => {
+                    const timeA = a.time || "";
+                    const timeB = b.time || "";
+                    return timeB.localeCompare(timeA);
+                });
+                ERP_STATE.rojmel = list;
+                renderRojmelTable();
+            });
+
+            // 8. Listen to assortRecords collection
+            db.collection("assortRecords").onSnapshot((snapshot) => {
+                const list = [];
+                snapshot.forEach(doc => list.push(doc.data()));
+                ERP_STATE.assortRecords = list;
+                renderAssortTable();
+            });
         }
+
+        function rebuildStockAndUI() {
+            const newStock = {};
+
+            // 1. Process all purchases (adds to stock)
+            const purchases = ERP_STATE.purchaseLog || [];
+            purchases.forEach(p => {
+                const key = getStockKey(p.color, p.size, p.clarity);
+                newStock[key] = (newStock[key] || 0) + p.carats;
+            });
+
+            // 2. Process all sales (subtracts from stock)
+            const sales = ERP_STATE.salesLog || [];
+            sales.forEach(s => {
+                const key = getStockKey(s.color, s.size, s.clarity);
+                newStock[key] = (newStock[key] || 0) - s.carats;
+            });
+
+            // 3. Remove zero/near-zero balances
+            for (const [key, qty] of Object.entries(newStock)) {
+                if (Math.abs(qty) < 0.0001) {
+                    delete newStock[key];
+                }
+            }
+
+            // 4. Apply to state
+            ERP_STATE.stock = newStock;
+            
+            // 5. Re-render UI components
+            renderAllDataComponents();
+        }
+
+        // Storage interfaces are left fully enabled for local offline caching and sync
+
+        // Generate stable client browser fingerprint
+        function getBrowserFingerprint() {
+            const parts = [
+                navigator.userAgent,
+                navigator.language,
+                navigator.platform,
+                navigator.hardwareConcurrency || 4,
+                navigator.deviceMemory || 0,
+                new Date().getTimezoneOffset()
+            ];
+            const str = parts.join('###');
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return 'FP-' + Math.abs(hash);
+        }
+
+
 
         // Helper functions for notepad and sieve pricing cached variables (stored in-memory & synced to cloud)
         function getStorageItem(key) {
@@ -3204,21 +3452,21 @@
                 purities: ['WH 1 VVS', 'WH 1 VS SI', 'Wh vs colour', 'WH 2', 'NW 1', 'NW 2', 'ow1 better', 'OW 1', 'ttlb', 'dark lb', 'Wh 3', 'RIPER', 'table chari', 'Lc fancy'],
                 parties: [],
                 brokers: [],
-                seriesPurities: JSON.parse(localStorage.getItem('sms_series_purities')) || ['WH 1 VVS', 'WH 1 VS SI', 'Wh vs colour', 'WH 2', 'NW 1', 'NW 2', 'ow1 better', 'OW 1', 'ttlb', 'dark lb', 'Wh 3', 'RIPER', 'table chari', 'Lc fancy']
+                seriesPurities: ['WH 1 VVS', 'WH 1 VS SI', 'Wh vs colour', 'WH 2', 'NW 1', 'NW 2', 'ow1 better', 'OW 1', 'ttlb', 'dark lb', 'Wh 3', 'RIPER', 'table chari', 'Lc fancy']
             },
             stock: {}, // Dynamic lookup structure matching keys `Color||Size||Purity`
             purchaseLog: [],
             salesLog: [],
             rojmel: [],
             invoiceCounters: { purchase: 1, sale: 1 },
-            adminUsername: localStorage.getItem('sms_admin_username') || 'admin',
-            adminPassword: localStorage.getItem('sms_admin_password') || 'admin123',
-            editPassword: localStorage.getItem('sms_edit_password') || 'edit123',
+            adminUsername: 'admin',
+            adminPassword: 'admin123',
+            editPassword: 'edit123',
             priceEditingUnlocked: false,
             isLoggedIn: false,
-            autoLogoutHours: parseFloat(localStorage.getItem('sms_auto_logout_duration')) || 12,
-            rateDeviationMode: localStorage.getItem('sms_rate_deviation_mode') || 'percentage',
-            rateDeviationVal: localStorage.getItem('sms_rate_deviation_val') !== null ? parseFloat(localStorage.getItem('sms_rate_deviation_val')) : 10,
+            autoLogoutHours: 12,
+            rateDeviationMode: 'percentage',
+            rateDeviationVal: 10,
             // Assortment state properties
             assortRecords: [],
             assortLearningMatrix: {},
@@ -3226,9 +3474,12 @@
             assortLostFound: [],
             // Manual local backups properties
             manualBackups: [],
-            lastManualBackupTime: null
+            lastManualBackupTime: null,
+            // Session tracking maps
+            sessions: {}
         };
 
+        // ── Admin Login ───────────────────────────────────────────────────
         // ── Admin Login ───────────────────────────────────────────────────
         function doAdminLogin() {
             const uInput = document.getElementById('login-username').value.trim();
@@ -3246,11 +3497,20 @@
             if ((uInput === validUser && pInput === validPass) || isDefault) {
                 ERP_STATE.isLoggedIn = true;
                 ERP_STATE.loginTime = Date.now();
+                
                 // If logging in via hardcoded defaults, sync state
                 if (isDefault) {
                     ERP_STATE.adminUsername = uInput;
                     ERP_STATE.adminPassword = pInput || 'admin123';
                 }
+
+                // Save session in localStorage for local restoration on page refresh
+                localStorage.setItem('sms_is_logged_in', 'true');
+                localStorage.setItem('sms_login_time', ERP_STATE.loginTime.toString());
+                localStorage.setItem('sms_auto_logout_duration', ERP_STATE.autoLogoutHours.toString());
+
+                saveDatabaseState();
+
                 document.getElementById('admin-login-overlay').style.display = 'none';
                 // Populate profile fields
                 const uEl = document.getElementById('profile-username');
@@ -3267,36 +3527,6 @@
             }
         }
 
-        function checkLoginSession() {
-            const isLoggedInStr = localStorage.getItem('sms_is_logged_in');
-            const loginTimeStr = localStorage.getItem('sms_login_time');
-            
-            if (isLoggedInStr === 'true' && loginTimeStr) {
-                const loginTime = parseInt(loginTimeStr, 10);
-                const currentTime = Date.now();
-                const sessionMs = ERP_STATE.autoLogoutHours * 60 * 60 * 1000;
-                
-                if (currentTime - loginTime < sessionMs) {
-                    ERP_STATE.isLoggedIn = true;
-                    const loginOverlay = document.getElementById('admin-login-overlay');
-                    if (loginOverlay) loginOverlay.style.display = 'none';
-                    
-                    const uEl = document.getElementById('profile-username');
-                    if (uEl) uEl.value = ERP_STATE.adminUsername;
-                    const editPassEl = document.getElementById('profile-edit-password');
-                    if (editPassEl) editPassEl.value = ERP_STATE.editPassword;
-                    
-                    switchView('view-blank');
-                    return true;
-                }
-            }
-            
-            localStorage.removeItem('sms_is_logged_in');
-            localStorage.removeItem('sms_login_time');
-            ERP_STATE.isLoggedIn = false;
-            return false;
-        }
-
         function updateLogoutHoursSetting(val) {
             let hours = parseFloat(val);
             if (isNaN(hours) || hours < 1) {
@@ -3306,7 +3536,7 @@
             }
             
             ERP_STATE.autoLogoutHours = hours;
-            localStorage.setItem('sms_auto_logout_duration', hours.toString());
+            saveDatabaseState();
             
             const logoutHoursInput = document.getElementById('profile-logout-hours');
             if (logoutHoursInput) logoutHoursInput.value = hours;
@@ -3316,7 +3546,7 @@
 
         function updateDeviationModeSetting(val) {
             ERP_STATE.rateDeviationMode = val;
-            localStorage.setItem('sms_rate_deviation_mode', val);
+            saveDatabaseState();
             
             const unitLbl = document.getElementById('deviation-unit-lbl');
             if (unitLbl) {
@@ -3332,7 +3562,7 @@
             }
             
             ERP_STATE.rateDeviationVal = threshold;
-            localStorage.setItem('sms_rate_deviation_val', threshold.toString());
+            saveDatabaseState();
             
             const deviationInput = document.getElementById('profile-deviation-val');
             if (deviationInput) deviationInput.value = threshold;
@@ -3342,10 +3572,9 @@
 
         function resetAdminToDefault() {
             showCustomConfirm('Reset Credentials', 'This will reset admin credentials to default (admin / admin123). Proceed?', () => {
-                localStorage.removeItem('sms_admin_username');
-                localStorage.removeItem('sms_admin_password');
                 ERP_STATE.adminUsername = 'admin';
                 ERP_STATE.adminPassword = 'admin123';
+                saveDatabaseState();
                 document.getElementById('login-username').value = 'admin';
                 document.getElementById('login-password').value = 'admin123';
                 document.getElementById('admin-login-error').innerText = '✅ Reset done. Click SIGN IN.';
@@ -3506,31 +3735,60 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // One-time database wipe to clear old localStorage data
-            if (localStorage.getItem('sms_erp_wiped_2026_06_15') !== 'true') {
-                const keysToRemove = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && (key.startsWith('sms_') || key.startsWith('last-bhav-'))) {
-                        keysToRemove.push(key);
-                    }
-                }
-                keysToRemove.forEach(key => localStorage.removeItem(key));
-                localStorage.setItem('sms_erp_wiped_2026_06_15', 'true');
-            }
-
             // Seed initial transactional elements for full presentation view
             initializeBaseDatabaseState();
-            loadDatabaseState();
-            
-            // Load state from Firebase, and refresh components afterwards
-            loadStateFromFirebase(() => {
-                refreshAllMasterSelectors();
-                actionAddNew('pur');
-                actionAddNew('sale');
-                renderAllDataComponents();
-                renderBackupHistory();
-                updateBackupReminderUI();
+            loadDatabaseState(); // This loads all local storage variables synchronously and does normalization
+
+            // Check session expiration on page load
+            if (ERP_STATE.isLoggedIn && ERP_STATE.loginTime) {
+                const currentTime = Date.now();
+                const sessionMs = ERP_STATE.autoLogoutHours * 60 * 60 * 1000;
+                if (currentTime - ERP_STATE.loginTime >= sessionMs) {
+                    ERP_STATE.isLoggedIn = false;
+                    ERP_STATE.loginTime = null;
+                    localStorage.removeItem('sms_is_logged_in');
+                    localStorage.removeItem('sms_login_time');
+                    localStorage.removeItem('sms_user_email');
+                }
+            }
+
+            if (ERP_STATE.isLoggedIn) {
+                const loginOverlay = document.getElementById('admin-login-overlay');
+                if (loginOverlay) loginOverlay.style.display = 'none';
+                switchView('view-blank');
+                
+                // Start sync listeners if logged in
+                startFirebaseSync();
+            }
+
+            // Listen for Firebase Auth changes to verify Google Profile session
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    const email = user.email.toLowerCase();
+                    db.collection("authorized_users").doc(email).get()
+                        .then((doc) => {
+                            if (doc.exists) {
+                                ERP_STATE.isLoggedIn = true;
+                                ERP_STATE.currentUserEmail = email;
+                                localStorage.setItem('sms_is_logged_in', 'true');
+                                localStorage.setItem('sms_user_email', email);
+                                
+                                const loginOverlay = document.getElementById('admin-login-overlay');
+                                if (loginOverlay) loginOverlay.style.display = 'none';
+                                
+                                startFirebaseSync();
+                            } else {
+                                doAdminLogout();
+                            }
+                        })
+                        .catch(() => {
+                            // Offline mode fallback: keep local session
+                        });
+                } else {
+                    if (navigator.onLine) {
+                        doAdminLogout();
+                    }
+                }
             });
 
             setupNumericInput('pur-form-days', false, 1, 'pur');
@@ -3561,18 +3819,9 @@
                 });
             }, 30000);
 
-            // Check session and restore if valid
-            const sessionRestored = checkLoginSession();
-
             // Pre-initialize default view layout and sidebar options
             switchView('view-blank');
             updateLiveStatusClock();
-
-            // Focus login username field only if session was not restored
-            if (!sessionRestored) {
-                const loginUser = document.getElementById('login-username');
-                if (loginUser) loginUser.focus();
-            }
 
             // Initialize the logout hours input field
             const logoutHoursInput = document.getElementById('profile-logout-hours');
@@ -3594,7 +3843,15 @@
                 unitLbl.innerText = ERP_STATE.rateDeviationMode === 'amount' ? '₹ difference allowed' : '% deviation allowed';
             }
 
-            // Check session expiration every 10 seconds (stored in-memory, zero-local-storage)
+            // Refresh components on startup
+            refreshAllMasterSelectors();
+            actionAddNew('pur');
+            actionAddNew('sale');
+            renderAllDataComponents();
+            renderBackupHistory();
+            updateBackupReminderUI();
+
+            // Check session expiration every 10 seconds
             setInterval(() => {
                 if (ERP_STATE.isLoggedIn) {
                     const loginTime = ERP_STATE.loginTime;
@@ -3619,7 +3876,7 @@
             return `${c}||${s}||${cl}`;
         }
 
-        function normalizeDatabaseState() {
+        function normalizeDatabaseState(shouldSave = true) {
             // 1. Normalize logs
             if (Array.isArray(ERP_STATE.purchaseLog)) {
                 ERP_STATE.purchaseLog.forEach(item => {
@@ -3664,156 +3921,77 @@
             }
 
             // 4. Save normalized database
-            saveDatabaseState();
+            if (shouldSave) {
+                saveDatabaseState();
+            }
         }
 
         function saveDatabaseState() {
-            // Save strictly to Firebase Firestore as requested (localStorage is disabled)
-            saveStateToFirebase();
-        }
+            try {
+                localStorage.setItem('sms_stock', JSON.stringify(ERP_STATE.stock || {}));
+                localStorage.setItem('sms_purchaseLog', JSON.stringify(ERP_STATE.purchaseLog || []));
+                localStorage.setItem('sms_salesLog', JSON.stringify(ERP_STATE.salesLog || []));
+                localStorage.setItem('sms_rojmel', JSON.stringify(ERP_STATE.rojmel || []));
+                localStorage.setItem('sms_invoiceCounters', JSON.stringify(ERP_STATE.invoiceCounters || { purchase: 1, sale: 1 }));
+                localStorage.setItem('sms_masters', JSON.stringify(ERP_STATE.masters || {}));
+                
+                localStorage.setItem('sms_assortRecords', JSON.stringify(ERP_STATE.assortRecords || []));
+                localStorage.setItem('sms_learningMatrix', JSON.stringify(ERP_STATE.assortLearningMatrix || {}));
+                localStorage.setItem('sms_assortStaff', JSON.stringify(ERP_STATE.assortStaff || []));
+                localStorage.setItem('sms_assortLostFound', JSON.stringify(ERP_STATE.assortLostFound || []));
+                
+                localStorage.setItem('sms_manualBackups', JSON.stringify(ERP_STATE.manualBackups || []));
+                localStorage.setItem('sms_lastBackupTime', ERP_STATE.lastManualBackupTime || '');
 
-        let firebaseSyncStatus = 'offline';
+                localStorage.setItem('sms_admin_username', ERP_STATE.adminUsername || 'admin');
+                localStorage.setItem('sms_admin_password', ERP_STATE.adminPassword || 'admin123');
+                localStorage.setItem('sms_edit_password', ERP_STATE.editPassword || 'edit123');
+                localStorage.setItem('sms_auto_logout_duration', (ERP_STATE.autoLogoutHours || 12).toString());
+                localStorage.setItem('sms_rate_deviation_mode', ERP_STATE.rateDeviationMode || 'percentage');
+                localStorage.setItem('sms_rate_deviation_val', (ERP_STATE.rateDeviationVal !== undefined ? ERP_STATE.rateDeviationVal : 10).toString());
+                localStorage.setItem('sms_settings_shortcuts', JSON.stringify(ERP_STATE.shortcuts || {}));
+                
+                localStorage.setItem('sms_notepad_text', ERP_STATE.notepadText || '');
+                localStorage.setItem('sms_last_bhav', JSON.stringify(ERP_STATE.lastBhav || {}));
+                
+                localStorage.setItem('sms_is_logged_in', ERP_STATE.isLoggedIn ? 'true' : 'false');
+                localStorage.setItem('sms_login_time', (ERP_STATE.loginTime || '').toString());
 
-        function updateFirebaseStatusUI(status, detailText) {
-            firebaseSyncStatus = status;
-            const dot = document.getElementById('firebase-status-dot');
-            const txt = document.getElementById('firebase-status-text');
-            if (!dot || !txt) return;
+                // Firebase sync settings and masters
+                if (firebase.auth().currentUser || ERP_STATE.isLoggedIn) {
+                    db.collection("settings").doc("general").set({
+                        editPassword: ERP_STATE.editPassword || 'edit123',
+                        autoLogoutHours: ERP_STATE.autoLogoutHours || 12,
+                        rateDeviationMode: ERP_STATE.rateDeviationMode || 'percentage',
+                        rateDeviationVal: ERP_STATE.rateDeviationVal !== undefined ? ERP_STATE.rateDeviationVal : 10,
+                        notepadText: ERP_STATE.notepadText || '',
+                        invoiceCounters: ERP_STATE.invoiceCounters || { purchase: 1, sale: 1 },
+                        lastBhav: ERP_STATE.lastBhav || {},
+                        shortcuts: ERP_STATE.shortcuts || {}
+                    }).catch(err => console.error("Error syncing general settings", err));
 
-            if (status === 'synced') {
-                dot.style.background = '#2ecc71';
-                txt.style.color = '#27ae60';
-                txt.innerText = detailText || 'Synced';
-            } else if (status === 'syncing') {
-                dot.style.background = '#f1c40f';
-                txt.style.color = '#d35400';
-                txt.innerText = detailText || 'Syncing...';
-            } else if (status === 'error') {
-                dot.style.background = '#e74c3c';
-                txt.style.color = '#c0392b';
-                txt.innerText = detailText || 'Sync Error';
-            } else {
-                dot.style.background = '#7f8c8d';
-                txt.style.color = '#7f8c8d';
-                txt.innerText = detailText || 'Offline';
+                    db.collection("settings").doc("assort").set({
+                        assortLearningMatrix: ERP_STATE.assortLearningMatrix || {},
+                        assortStaff: ERP_STATE.assortStaff || [],
+                        assortLostFound: ERP_STATE.assortLostFound || []
+                    }).catch(err => console.error("Error syncing assort settings", err));
+
+                    db.collection("masters").doc("data").set({
+                        colors: ERP_STATE.masters.colors || [],
+                        sizes: ERP_STATE.masters.sizes || [],
+                        numbers: ERP_STATE.masters.numbers || [],
+                        purities: ERP_STATE.masters.purities || [],
+                        seriesPurities: ERP_STATE.masters.seriesPurities || [],
+                        parties: ERP_STATE.masters.parties || [],
+                        brokers: ERP_STATE.masters.brokers || []
+                    }).catch(err => console.error("Error syncing masters data", err));
+                }
+            } catch (e) {
+                console.error("Local save failed", e);
             }
         }
 
-        function saveStateToFirebase() {
-            if (typeof firebase === 'undefined' || !firebase.apps.length || !db) {
-                updateFirebaseStatusUI('offline', 'Firebase SDK Offline');
-                return;
-            }
 
-            updateFirebaseStatusUI('syncing', 'Syncing changes...');
-
-            const docData = {
-                // Invoices and inventory logs
-                stock: ERP_STATE.stock || {},
-                purchaseLog: ERP_STATE.purchaseLog || [],
-                salesLog: ERP_STATE.salesLog || [],
-                rojmel: ERP_STATE.rojmel || [],
-                invoiceCounters: ERP_STATE.invoiceCounters || { purchase: 1, sale: 1 },
-                invoiceMetadata: ERP_STATE.invoiceMetadata || {},
-                masters: ERP_STATE.masters || {},
-
-                // Assortment state
-                assortRecords: ERP_STATE.assortRecords || [],
-                assortLearningMatrix: ERP_STATE.assortLearningMatrix || {},
-                assortStaff: ERP_STATE.assortStaff || [],
-                assortLostFound: ERP_STATE.assortLostFound || [],
-
-                // Manual backups history
-                manualBackups: ERP_STATE.manualBackups || [],
-                lastManualBackupTime: ERP_STATE.lastManualBackupTime || null,
-
-                // Profile and security parameters
-                adminUsername: ERP_STATE.adminUsername || 'admin',
-                adminPassword: ERP_STATE.adminPassword || 'admin123',
-                editPassword: ERP_STATE.editPassword || 'edit123',
-                autoLogoutHours: ERP_STATE.autoLogoutHours || 12,
-                rateDeviationMode: ERP_STATE.rateDeviationMode || 'percentage',
-                rateDeviationVal: ERP_STATE.rateDeviationVal !== undefined ? ERP_STATE.rateDeviationVal : 10,
-                shortcuts: ERP_STATE.shortcuts || {},
-                notepadText: ERP_STATE.notepadText || "",
-                lastBhav: ERP_STATE.lastBhav || {},
-
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            db.collection("erp_data").doc("global_state").set(docData)
-                .then(() => {
-                    updateFirebaseStatusUI('synced', 'Connected & Synced');
-                    console.log("Firebase state sync successful!");
-                })
-                .catch(err => {
-                    console.error("Firebase state sync failed:", err);
-                    updateFirebaseStatusUI('error', 'Sync Failed (Blocked/Offline)');
-                });
-        }
-
-        function loadStateFromFirebase(callback) {
-            if (typeof firebase === 'undefined' || !firebase.apps.length || !db) {
-                updateFirebaseStatusUI('offline', 'Firebase SDK Offline');
-                if (callback) callback();
-                return;
-            }
-
-            updateFirebaseStatusUI('syncing', 'Loading cloud state...');
-
-            db.collection("erp_data").doc("global_state").get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        
-                        // Populate memory variables from Firestore
-                        if (data.stock) ERP_STATE.stock = data.stock;
-                        if (data.purchaseLog) ERP_STATE.purchaseLog = data.purchaseLog;
-                        if (data.salesLog) ERP_STATE.salesLog = data.salesLog;
-                        if (data.rojmel) ERP_STATE.rojmel = data.rojmel;
-                        if (data.invoiceCounters) ERP_STATE.invoiceCounters = data.invoiceCounters;
-                        if (data.invoiceMetadata) ERP_STATE.invoiceMetadata = data.invoiceMetadata;
-                        if (data.masters) ERP_STATE.masters = data.masters;
-                        if (data.assortRecords) ERP_STATE.assortRecords = data.assortRecords;
-                        if (data.assortLearningMatrix) ERP_STATE.assortLearningMatrix = data.assortLearningMatrix;
-                        if (data.assortStaff) ERP_STATE.assortStaff = data.assortStaff;
-                        if (data.assortLostFound) ERP_STATE.assortLostFound = data.assortLostFound;
-                        
-                        if (data.manualBackups) ERP_STATE.manualBackups = data.manualBackups;
-                        if (data.lastManualBackupTime) ERP_STATE.lastManualBackupTime = data.lastManualBackupTime;
-
-                        if (data.adminUsername) ERP_STATE.adminUsername = data.adminUsername;
-                        if (data.adminPassword) ERP_STATE.adminPassword = data.adminPassword;
-                        if (data.editPassword) ERP_STATE.editPassword = data.editPassword;
-                        if (data.autoLogoutHours) ERP_STATE.autoLogoutHours = data.autoLogoutHours;
-                        if (data.rateDeviationMode) ERP_STATE.rateDeviationMode = data.rateDeviationMode;
-                        if (data.rateDeviationVal !== undefined) ERP_STATE.rateDeviationVal = data.rateDeviationVal;
-                        if (data.shortcuts) ERP_STATE.shortcuts = data.shortcuts;
-                        if (data.notepadText) ERP_STATE.notepadText = data.notepadText;
-                        if (data.lastBhav) ERP_STATE.lastBhav = data.lastBhav;
-
-                        updateFirebaseStatusUI('synced', 'Connected & Synced');
-                        console.log("Firebase state loaded successfully!");
-                    } else {
-                        console.log("No Firebase cloud state found. Uploading default base state.");
-                        saveStateToFirebase();
-                    }
-                    if (callback) callback();
-                })
-                .catch(err => {
-                    console.error("Firebase state load failed:", err);
-                    updateFirebaseStatusUI('error', 'Error Loading (Blocked/Offline)');
-                    if (callback) callback();
-                });
-        }
-
-        function triggerFirebaseForceSync() {
-            challengeAdminPassword(() => {
-                showCustomConfirm('Cloud Sync', 'Upload local browser database state to Firebase Firestore cloud storage now?', () => {
-                    saveStateToFirebase();
-                });
-            }, "Enter administrative password to authorize cloud upload:");
-        }
 
         function rebuildStockFromLogs() {
             challengeAdminPassword(() => {
@@ -3900,80 +4078,69 @@
                     ERP_STATE.rateDeviationVal = 10;
                     ERP_STATE.notepadText = "";
                     ERP_STATE.lastBhav = {};
+                    ERP_STATE.sessions = {};
 
-                    // Sync the reset empty state to Firebase, then reload page
-                    if (typeof firebase !== 'undefined' && firebase.apps.length && db) {
-                        db.collection("erp_data").doc("global_state").delete()
-                            .then(() => {
-                                console.log("Firebase database document deleted successfully!");
-                                location.reload();
-                            })
-                            .catch(err => {
-                                console.error("Firebase document delete failed:", err);
-                                // Fallback: try saving base state
-                                saveStateToFirebase();
-                                setTimeout(() => location.reload(), 1500);
-                            });
-                    } else {
-                        location.reload();
-                    }
+                    // Wipe local storage database and reload page
+                    saveDatabaseState();
+                    location.reload();
                 }, null, 'danger');
             }, "Enter administrative password to authorize database wipe:");
         }
 
         function loadDatabaseState() {
             try {
-                const stock = localStorage.getItem('sms_erp_stock');
+                const stock = localStorage.getItem('sms_stock');
                 if (stock) ERP_STATE.stock = JSON.parse(stock);
-
-                const purchaseLog = localStorage.getItem('sms_erp_purchase_log');
-                if (purchaseLog) ERP_STATE.purchaseLog = JSON.parse(purchaseLog);
-
-                const salesLog = localStorage.getItem('sms_erp_sales_log');
+                const purLog = localStorage.getItem('sms_purchaseLog');
+                if (purLog) ERP_STATE.purchaseLog = JSON.parse(purLog);
+                const salesLog = localStorage.getItem('sms_salesLog');
                 if (salesLog) ERP_STATE.salesLog = JSON.parse(salesLog);
-
-                const rojmel = localStorage.getItem('sms_erp_rojmel');
+                const rojmel = localStorage.getItem('sms_rojmel');
                 if (rojmel) ERP_STATE.rojmel = JSON.parse(rojmel);
+                const counters = localStorage.getItem('sms_invoiceCounters');
+                if (counters) ERP_STATE.invoiceCounters = JSON.parse(counters);
+                const masters = localStorage.getItem('sms_masters');
+                if (masters) ERP_STATE.masters = JSON.parse(masters);
 
-                const invoiceCounters = localStorage.getItem('sms_erp_invoice_counters');
-                if (invoiceCounters) ERP_STATE.invoiceCounters = JSON.parse(invoiceCounters);
+                const assort = localStorage.getItem('sms_assortRecords');
+                if (assort) ERP_STATE.assortRecords = JSON.parse(assort);
+                const matrix = localStorage.getItem('sms_learningMatrix');
+                if (matrix) ERP_STATE.assortLearningMatrix = JSON.parse(matrix);
+                const staff = localStorage.getItem('sms_assortStaff');
+                if (staff) ERP_STATE.assortStaff = JSON.parse(staff);
+                const lf = localStorage.getItem('sms_assortLostFound');
+                if (lf) ERP_STATE.assortLostFound = JSON.parse(lf);
 
-                const invoiceMetadata = localStorage.getItem('sms_erp_invoice_metadata');
-                if (invoiceMetadata) ERP_STATE.invoiceMetadata = JSON.parse(invoiceMetadata);
+                const backups = localStorage.getItem('sms_manualBackups');
+                if (backups) ERP_STATE.manualBackups = JSON.parse(backups);
+                const lbt = localStorage.getItem('sms_lastBackupTime');
+                if (lbt) ERP_STATE.lastManualBackupTime = lbt;
 
-                const masters = localStorage.getItem('sms_erp_masters');
-                if (masters) {
-                    const parsedMasters = JSON.parse(masters);
-                    if (parsedMasters.colors) ERP_STATE.masters.colors = parsedMasters.colors;
-                    if (parsedMasters.sizes) ERP_STATE.masters.sizes = parsedMasters.sizes;
-                    if (parsedMasters.numbers) ERP_STATE.masters.numbers = parsedMasters.numbers;
-                    if (parsedMasters.purities) ERP_STATE.masters.purities = parsedMasters.purities;
-                    if (parsedMasters.parties) ERP_STATE.masters.parties = parsedMasters.parties;
-                    if (parsedMasters.brokers) ERP_STATE.masters.brokers = parsedMasters.brokers;
-                    if (parsedMasters.seriesPurities) ERP_STATE.masters.seriesPurities = parsedMasters.seriesPurities;
-                }
+                const user = localStorage.getItem('sms_admin_username');
+                if (user) ERP_STATE.adminUsername = user;
+                const pass = localStorage.getItem('sms_admin_password');
+                if (pass) ERP_STATE.adminPassword = pass;
+                const epass = localStorage.getItem('sms_edit_password');
+                if (epass) ERP_STATE.editPassword = epass;
+                const dur = localStorage.getItem('sms_auto_logout_duration');
+                if (dur) ERP_STATE.autoLogoutHours = parseFloat(dur);
+                const mode = localStorage.getItem('sms_rate_deviation_mode');
+                if (mode) ERP_STATE.rateDeviationMode = mode;
+                const val = localStorage.getItem('sms_rate_deviation_val');
+                if (val) ERP_STATE.rateDeviationVal = parseFloat(val);
 
-                // Load isolated assortment desk state
-                const assortRecords = localStorage.getItem('sms_assort_records');
-                if (assortRecords) ERP_STATE.assortRecords = JSON.parse(assortRecords);
+                const loggedIn = localStorage.getItem('sms_is_logged_in');
+                if (loggedIn) ERP_STATE.isLoggedIn = (loggedIn === 'true');
+                const logTime = localStorage.getItem('sms_login_time');
+                if (logTime) ERP_STATE.loginTime = parseInt(logTime, 10);
+                const userEmail = localStorage.getItem('sms_user_email');
+                if (userEmail) ERP_STATE.currentUserEmail = userEmail;
 
-                const assortLearningMatrix = localStorage.getItem('sms_assort_learning_matrix');
-                if (assortLearningMatrix) ERP_STATE.assortLearningMatrix = JSON.parse(assortLearningMatrix);
+                const notepadText = localStorage.getItem('sms_notepad_text');
+                if (notepadText) ERP_STATE.notepadText = notepadText;
+                const lastBhav = localStorage.getItem('sms_last_bhav');
+                if (lastBhav) ERP_STATE.lastBhav = JSON.parse(lastBhav);
 
-                const assortStaff = localStorage.getItem('sms_assort_staff');
-                if (assortStaff) ERP_STATE.assortStaff = JSON.parse(assortStaff);
-
-                const assortLostFound = localStorage.getItem('sms_assort_lost_found');
-                if (assortLostFound) ERP_STATE.assortLostFound = JSON.parse(assortLostFound);
-
-                // Load manual backups state
-                const manualBackups = localStorage.getItem('sms_manual_backups');
-                if (manualBackups) ERP_STATE.manualBackups = JSON.parse(manualBackups);
-
-                const lastManualBackup = localStorage.getItem('sms_last_manual_backup_time');
-                if (lastManualBackup) ERP_STATE.lastManualBackupTime = parseInt(lastManualBackup);
-
-                // Load custom keyboard shortcuts
                 const DEFAULT_SHORTCUTS = {
                     "Add New": { key: "n", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+N", active: true },
                     "Save Invoice": { key: "s", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+S", active: true },
@@ -3994,26 +4161,17 @@
                     "Open BROKER MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-broker-master" },
                     "Open SETTINGS": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-settings" }
                 };
-
-                const localShortcuts = localStorage.getItem('sms_settings_shortcuts');
-                ERP_STATE.shortcuts = Object.assign({}, DEFAULT_SHORTCUTS);
-                if (localShortcuts) {
-                    try {
-                        const parsed = JSON.parse(localShortcuts);
-                        Object.keys(parsed).forEach(k => {
-                            if (ERP_STATE.shortcuts[k]) {
-                                ERP_STATE.shortcuts[k] = Object.assign({}, ERP_STATE.shortcuts[k], parsed[k]);
-                            } else {
-                                ERP_STATE.shortcuts[k] = parsed[k];
-                            }
-                        });
-                    } catch(e) {
-                        console.error("Failed to parse shortcuts", e);
-                    }
+                const savedShortcuts = localStorage.getItem('sms_settings_shortcuts');
+                if (savedShortcuts) {
+                    ERP_STATE.shortcuts = Object.assign({}, DEFAULT_SHORTCUTS, JSON.parse(savedShortcuts));
+                } else {
+                    ERP_STATE.shortcuts = Object.assign({}, DEFAULT_SHORTCUTS);
                 }
-                normalizeDatabaseState();
+
+                // Run database normalization locally on load database state
+                normalizeDatabaseState(false);
             } catch (e) {
-                console.error("Failed to load database state from localStorage", e);
+                console.error("Failed to load database state", e);
             }
         }
 
@@ -4161,12 +4319,19 @@
 
         function doAdminLogout() {
             ERP_STATE.isLoggedIn = false;
+            ERP_STATE.loginTime = null;
+            ERP_STATE.currentUserEmail = null;
+            
+            // Clear session from localStorage
             localStorage.removeItem('sms_is_logged_in');
             localStorage.removeItem('sms_login_time');
+            localStorage.removeItem('sms_user_email');
+            
+            // Sign out from Firebase Auth
+            firebase.auth().signOut().catch(err => console.error("Sign out failed", err));
+            firebaseSyncStarted = false;
+
             document.getElementById('admin-login-overlay').style.display = 'flex';
-            document.getElementById('login-password').value = '';
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-username').focus();
         }
 
         // Floating tools toggles & actions
@@ -4413,42 +4578,68 @@
             ERP_STATE.stock[srcKey] -= weight;
             ERP_STATE.stock[destKey] = (ERP_STATE.stock[destKey] || 0) + weight;
 
-            // Recalculate average cost books by adding a log entry
-            ERP_STATE.purchaseLog.unshift({
-                invoice: "MIX-TRS",
-                date: new Date().toISOString().split('T')[0],
+            const mixInvNoPur = `MIX-PR-${Date.now()}`;
+            const mixInvNoSale = `MIX-SL-${Date.now()}`;
+            const today = new Date().toISOString().split('T')[0];
+
+            // 1. Write purchase mix document
+            db.collection("purchases").doc(mixInvNoPur).set({
+                invoice: mixInvNoPur,
+                date: today,
                 party: "Polish Mix Transfer",
                 broker: "Direct Trading (No Broker)",
-                color: destColor.trim().toUpperCase(),
-                size: destSize.trim().toUpperCase(),
-                clarity: destPurity.trim().toUpperCase(),
-                carats: weight,
-                rate: rate,
-                amount: weight * rate,
-                remark: `From [${srcColor.trim().toUpperCase()} ${srcSize.trim().toUpperCase()} ${srcPurity.trim().toUpperCase()}]`
-            });
+                days: 0,
+                brokerage: 0,
+                items: [{
+                    sNo: 1,
+                    stockId: `STK-MIX-${Date.now()}-1`,
+                    color: destColor.trim().toUpperCase(),
+                    size: destSize.trim().toUpperCase(),
+                    clarity: destPurity.trim().toUpperCase(),
+                    carats: weight,
+                    rate: rate,
+                    disc: 0,
+                    amount: weight * rate,
+                    remark: `From [${srcColor.trim().toUpperCase()} ${srcSize.trim().toUpperCase()} ${srcPurity.trim().toUpperCase()}]`
+                }],
+                customExpenses: [],
+                timestamp: Date.now()
+            }).catch(err => console.error("Error saving mix purchase doc", err));
 
-            // Log deduction to salesLog so it matches during stock rebuild
-            ERP_STATE.salesLog.unshift({
-                invoice: "MIX-TRS-DED",
-                date: new Date().toISOString().split('T')[0],
+            // 2. Write sales mix document
+            db.collection("sales").doc(mixInvNoSale).set({
+                invoice: mixInvNoSale,
+                date: today,
                 party: "Polish Mix Transfer",
                 broker: "Direct Trading (No Broker)",
-                color: srcColor.trim().toUpperCase(),
-                size: srcSize.trim().toUpperCase(),
-                clarity: srcPurity.trim().toUpperCase(),
-                carats: weight,
-                rate: rate,
-                amount: weight * rate,
-                remark: `To [${destColor.trim().toUpperCase()} ${destSize.trim().toUpperCase()} ${destPurity.trim().toUpperCase()}]`
-            });
+                days: 0,
+                brokerage: 0,
+                items: [{
+                    sNo: 1,
+                    stockId: `STK-MIX-${Date.now()}-2`,
+                    color: srcColor.trim().toUpperCase(),
+                    size: srcSize.trim().toUpperCase(),
+                    clarity: srcPurity.trim().toUpperCase(),
+                    carats: weight,
+                    rate: rate,
+                    disc: 0,
+                    amount: weight * rate,
+                    remark: `To [${destColor.trim().toUpperCase()} ${destSize.trim().toUpperCase()} ${destPurity.trim().toUpperCase()}]`
+                }],
+                customExpenses: [],
+                timestamp: Date.now()
+            }).catch(err => console.error("Error saving mix sales doc", err));
 
-            ERP_STATE.rojmel.unshift({
-                time: new Date().toISOString().split('T')[0] + " Transfer",
+            // 3. Write Rojmel Entry
+            const rojmelDoc = {
+                time: today + " Transfer",
                 type: "MIX-TRANSFER",
                 msg: `Transferred ${weight.toFixed(3)} Cts from [${srcColor}-${srcSize}-${srcPurity}] to [${destColor}-${destSize}-${destPurity}] @ ₹${rate}/Ct`,
-                delta: "Balanced Split"
-            });
+                delta: "Balanced Split",
+                timestamp: Date.now()
+            };
+            db.collection("rojmel").add(rojmelDoc)
+                .catch(err => console.error("Error logging mix to Rojmel collection", err));
 
             document.getElementById('mix-carat-weight').value = "";
             document.getElementById('mix-dest-rate').value = "";
@@ -5045,13 +5236,45 @@
                 // Save database state
                 saveDatabaseState();
 
+                // Save document to Firestore purchases/sales collection
+                const invoiceDoc = {
+                    invoice: invNo,
+                    date: date,
+                    party: party,
+                    broker: broker,
+                    days: days,
+                    brokerage: brokerage,
+                    items: items.map(itm => ({
+                        sNo: itm.sNo,
+                        stockId: itm.stockId,
+                        color: itm.color,
+                        size: itm.size,
+                        clarity: itm.clarity,
+                        carats: itm.carats,
+                        rate: itm.rate,
+                        disc: itm.disc || 0,
+                        amount: itm.amount,
+                        remark: itm.remark || ""
+                    })),
+                    customExpenses: customExpenses,
+                    timestamp: Date.now()
+                };
+
+                const collectionName = type === 'pur' ? 'purchases' : 'sales';
+                db.collection(collectionName).doc(invNo).set(invoiceDoc)
+                    .catch(err => console.error("Error saving invoice to Firestore", err));
+
                 // Rojmel log
-                ERP_STATE.rojmel.unshift({
+                const rojmelEntry = {
                     time: date + (isOverwrite ? " Edit" : " Log"),
                     type: type === 'pur' ? "PURCHASE" : "SALE",
                     msg: `${isOverwrite ? 'Updated' : 'Consolidated'} Invoice [${invNo}] - ${type === 'pur' ? 'Purchased' : 'Sold'} ${totalCaratsSaved.toFixed(3)} Cts total across ${items.length} lots from/to ${party}`,
-                    delta: `${type === 'pur' ? '+' : '-'}${totalCaratsSaved.toFixed(3)} Cts`
-                });
+                    delta: `${type === 'pur' ? '+' : '-'}${totalCaratsSaved.toFixed(3)} Cts`,
+                    timestamp: Date.now()
+                };
+                ERP_STATE.rojmel.unshift(rojmelEntry);
+                db.collection("rojmel").add(rojmelEntry)
+                    .catch(err => console.error("Error logging to Rojmel collection", err));
 
                 // Increment counter if it matched default prefix
                 const currentCounter = ERP_STATE.invoiceCounters[type === 'pur' ? 'purchase' : 'sale'];
@@ -5059,7 +5282,7 @@
                     ERP_STATE.invoiceCounters[type === 'pur' ? 'purchase' : 'sale']++;
                 }
 
-                // Save database state again (to include Rojmel and Counter updates)
+                // Save database state again (to include Counter updates)
                 saveDatabaseState();
 
                 // Update UI and reset forms immediately
@@ -5129,13 +5352,21 @@
                     // Remove metadata
                     delete ERP_STATE.invoiceMetadata[invNo];
 
+                    const collectionName = type === 'pur' ? 'purchases' : 'sales';
+                    db.collection(collectionName).doc(invNo).delete()
+                        .catch(err => console.error("Error deleting invoice from Firestore", err));
+
                     // Rojmel log
-                    ERP_STATE.rojmel.unshift({
+                    const rojmelEntry = {
                         time: new Date().toISOString().split('T')[0] + " Del",
                         type: type === 'pur' ? "PURCHASE" : "SALE",
                         msg: `Deleted Consolidated Invoice [${invNo}]`,
-                        delta: "Reverted Stocks"
-                    });
+                        delta: "Reverted Stocks",
+                        timestamp: Date.now()
+                    };
+                    ERP_STATE.rojmel.unshift(rojmelEntry);
+                    db.collection("rojmel").add(rojmelEntry)
+                        .catch(err => console.error("Error logging deletion to Rojmel collection", err));
 
                     // Save database state
                     saveDatabaseState();
