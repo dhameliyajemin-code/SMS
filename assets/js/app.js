@@ -991,15 +991,15 @@
                 const DEFAULT_SHORTCUTS = {
                     "Add New": { key: "n", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+N", active: true },
                     "Save Invoice": { key: "s", altKey: true, ctrlKey: false, shiftKey: false, display: "Alt+S", active: true },
-                    "Open P.PURCHASE": { key: "f1", altKey: false, ctrlKey: false, shiftKey: false, display: "F1", active: true, view: "view-purchase" },
-                    "Open P.SELL": { key: "f2", altKey: false, ctrlKey: false, shiftKey: false, display: "F2", active: true, view: "view-sale" },
+                    "Open P PURCHASE": { key: "f1", altKey: false, ctrlKey: false, shiftKey: false, display: "F1", active: true, view: "view-purchase" },
+                    "Open P SELL": { key: "f2", altKey: false, ctrlKey: false, shiftKey: false, display: "F2", active: true, view: "view-sale" },
                     "Open TIJORI": { key: "f3", altKey: false, ctrlKey: false, shiftKey: false, display: "F3", active: true, view: "view-stock" },
                     "Open SERIES OPENING": { key: "f4", altKey: false, ctrlKey: false, shiftKey: false, display: "F4", active: true, view: "view-opening" },
                     "Open ASSORTMENT": { key: "f5", altKey: false, ctrlKey: false, shiftKey: false, display: "F5", active: true, view: "view-assortment" },
                     "Open MIX TRANSFER": { key: "f6", altKey: false, ctrlKey: false, shiftKey: false, display: "F6", active: true, view: "view-mix" },
                     "Open PAYMENT ENTRY": { key: "f7", altKey: false, ctrlKey: false, shiftKey: false, display: "F7", active: true, view: "view-payment-entry" },
-                    "Open PAYMENT I/R": { key: "f8", altKey: false, ctrlKey: false, shiftKey: false, display: "F8", active: true, view: "view-payment-ir" },
-                    "Open ROJMEL/LEDGER": { key: "f9", altKey: false, ctrlKey: false, shiftKey: false, display: "F9", active: true, view: "view-rojmel" },
+                    "Open PAYMENT IR": { key: "f8", altKey: false, ctrlKey: false, shiftKey: false, display: "F8", active: true, view: "view-payment-ir" },
+                    "Open ROJMEL LEDGER": { key: "f9", altKey: false, ctrlKey: false, shiftKey: false, display: "F9", active: true, view: "view-rojmel" },
                     "Open REPORT MASTER": { key: "f10", altKey: false, ctrlKey: false, shiftKey: false, display: "F10", active: true, view: "view-reports" },
                     "Open WHATSAPP": { key: "f11", altKey: false, ctrlKey: false, shiftKey: false, display: "F11", active: true, view: "view-whatsapp" },
                     "Open SHADE MASTER": { key: "", altKey: false, ctrlKey: false, shiftKey: false, display: "", active: true, view: "view-purity-master" },
@@ -1011,7 +1011,20 @@
                 };
                 const savedShortcuts = localStorage.getItem('sms_settings_shortcuts');
                 if (savedShortcuts) {
-                    ERP_STATE.shortcuts = Object.assign({}, DEFAULT_SHORTCUTS, JSON.parse(savedShortcuts));
+                    try {
+                        const parsed = JSON.parse(savedShortcuts);
+                        const cleanParsed = {};
+                        for (const [key, val] of Object.entries(parsed)) {
+                            let cleanKey = key;
+                            if (cleanKey.includes('.') || cleanKey.includes('/')) {
+                                cleanKey = cleanKey.replace(/\./g, ' ').replace(/\//g, ' ');
+                            }
+                            cleanParsed[cleanKey] = val;
+                        }
+                        ERP_STATE.shortcuts = Object.assign({}, DEFAULT_SHORTCUTS, cleanParsed);
+                    } catch (e) {
+                        ERP_STATE.shortcuts = Object.assign({}, DEFAULT_SHORTCUTS);
+                    }
                 } else {
                     ERP_STATE.shortcuts = Object.assign({}, DEFAULT_SHORTCUTS);
                 }
