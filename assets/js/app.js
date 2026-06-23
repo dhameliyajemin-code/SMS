@@ -3961,8 +3961,9 @@
                 if (REPORT_FILTERS.Party && l.party !== REPORT_FILTERS.Party) return false;
                 if (REPORT_FILTERS.Broker && l.broker !== REPORT_FILTERS.Broker) return false;
                 
-                const cleanLogSize = l.size.replace(/ Sieve| size/gi, '').trim();
-                if (REPORT_FILTERS.Size && cleanLogSize !== REPORT_FILTERS.Size) return false;
+                const cleanLogSize = l.size.replace(/ Sieve| size/gi, '').trim().toUpperCase();
+                const cleanFilterSize = REPORT_FILTERS.Size ? REPORT_FILTERS.Size.replace(/ Sieve| size/gi, '').trim().toUpperCase() : '';
+                if (REPORT_FILTERS.Size && cleanLogSize !== cleanFilterSize) return false;
                 
                 if (REPORT_FILTERS.Purity && l.clarity !== REPORT_FILTERS.Purity) return false;
                 return true;
@@ -3988,8 +3989,9 @@
                 if (REPORT_FILTERS.Party && l.party !== REPORT_FILTERS.Party) return false;
                 if (REPORT_FILTERS.Broker && l.broker !== REPORT_FILTERS.Broker) return false;
 
-                const cleanSize = l.size.replace(/ Sieve| size/gi, '').trim();
-                if (REPORT_FILTERS.Size && cleanSize !== REPORT_FILTERS.Size) return false;
+                const cleanSize = l.size.replace(/ Sieve| size/gi, '').trim().toUpperCase();
+                const cleanFilterSize = REPORT_FILTERS.Size ? REPORT_FILTERS.Size.replace(/ Sieve| size/gi, '').trim().toUpperCase() : '';
+                if (REPORT_FILTERS.Size && cleanSize !== cleanFilterSize) return false;
 
                 if (REPORT_FILTERS.Purity && l.clarity !== REPORT_FILTERS.Purity) return false;
                 return true;
