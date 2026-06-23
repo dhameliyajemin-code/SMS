@@ -3961,8 +3961,8 @@
                 if (REPORT_FILTERS.Party && l.party !== REPORT_FILTERS.Party) return false;
                 if (REPORT_FILTERS.Broker && l.broker !== REPORT_FILTERS.Broker) return false;
                 
-                const cleanLogSize = l.size.replace(/ Sieve| size/gi, '').trim().toUpperCase();
-                const cleanFilterSize = REPORT_FILTERS.Size ? REPORT_FILTERS.Size.replace(/ Sieve| size/gi, '').trim().toUpperCase() : '';
+                const cleanLogSize = (l.size || '').toString().replace(/ Sieve| size/gi, '').trim().toUpperCase();
+                const cleanFilterSize = REPORT_FILTERS.Size ? REPORT_FILTERS.Size.toString().replace(/ Sieve| size/gi, '').trim().toUpperCase() : '';
                 if (REPORT_FILTERS.Size && cleanLogSize !== cleanFilterSize) return false;
                 
                 if (REPORT_FILTERS.Purity && l.clarity !== REPORT_FILTERS.Purity) return false;
@@ -3971,14 +3971,14 @@
 
             purBody.innerHTML = filteredPurchases.map(l => `
                 <tr>
-                    <td><strong>${l.invoice}</strong></td>
-                    <td>${l.date}</td>
-                    <td>${l.party}</td>
-                    <td>${l.broker}</td>
-                    <td><span style="font-size:0.8rem; color:var(--text-muted);">${l.color} | ${l.size} | ${l.clarity}</span></td>
-                    <td style="text-align: right;">${l.carats.toFixed(3)} Cts</td>
-                    <td style="text-align: right;">₹${l.rate.toLocaleString('en-IN')}</td>
-                    <td style="text-align: right; font-weight:700;">₹${l.amount.toLocaleString('en-IN')}</td>
+                    <td><strong>${l.invoice || ''}</strong></td>
+                    <td>${l.date || ''}</td>
+                    <td>${l.party || ''}</td>
+                    <td>${l.broker || ''}</td>
+                    <td><span style="font-size:0.8rem; color:var(--text-muted);">${l.color || ''} | ${l.size || ''} | ${l.clarity || ''}</span></td>
+                    <td style="text-align: right;">${Number(l.carats || 0).toFixed(3)} Cts</td>
+                    <td style="text-align: right;">₹${Number(l.rate || 0).toLocaleString('en-IN')}</td>
+                    <td style="text-align: right; font-weight:700;">₹${Number(l.amount || 0).toLocaleString('en-IN')}</td>
                 </tr>
             `).join('') || `<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">No purchase entries match active report filters.</td></tr>`;
 
@@ -3989,8 +3989,8 @@
                 if (REPORT_FILTERS.Party && l.party !== REPORT_FILTERS.Party) return false;
                 if (REPORT_FILTERS.Broker && l.broker !== REPORT_FILTERS.Broker) return false;
 
-                const cleanSize = l.size.replace(/ Sieve| size/gi, '').trim().toUpperCase();
-                const cleanFilterSize = REPORT_FILTERS.Size ? REPORT_FILTERS.Size.replace(/ Sieve| size/gi, '').trim().toUpperCase() : '';
+                const cleanSize = (l.size || '').toString().replace(/ Sieve| size/gi, '').trim().toUpperCase();
+                const cleanFilterSize = REPORT_FILTERS.Size ? REPORT_FILTERS.Size.toString().replace(/ Sieve| size/gi, '').trim().toUpperCase() : '';
                 if (REPORT_FILTERS.Size && cleanSize !== cleanFilterSize) return false;
 
                 if (REPORT_FILTERS.Purity && l.clarity !== REPORT_FILTERS.Purity) return false;
@@ -3998,20 +3998,20 @@
             });
 
             saleBody.innerHTML = filteredSales.map(l => {
-                const cleanSize = l.size.replace(/ Sieve| size/gi, '').trim();
+                const cleanSize = (l.size || '').toString().replace(/ Sieve| size/gi, '').trim();
                 const costRate = getAveragePurchaseRate(cleanSize, l.clarity);
-                const profit = l.amount - (l.carats * costRate);
-                const marginPct = l.amount > 0 ? (profit / l.amount) * 100 : 0;
+                const profit = Number(l.amount || 0) - (Number(l.carats || 0) * costRate);
+                const marginPct = Number(l.amount || 0) > 0 ? (profit / Number(l.amount || 0)) * 100 : 0;
 
                 return `
                     <tr>
-                        <td><strong>${l.invoice}</strong></td>
-                        <td>${l.date}</td>
-                        <td>${l.party}</td>
-                        <td>${l.broker}</td>
-                        <td><span style="font-size:0.8rem; color:var(--text-muted);">${l.color} | ${l.size} | ${l.clarity}</span></td>
-                        <td style="text-align: right;">${l.carats.toFixed(3)} Cts</td>
-                        <td style="text-align: right;">₹${l.rate.toLocaleString('en-IN')}</td>
+                        <td><strong>${l.invoice || ''}</strong></td>
+                        <td>${l.date || ''}</td>
+                        <td>${l.party || ''}</td>
+                        <td>${l.broker || ''}</td>
+                        <td><span style="font-size:0.8rem; color:var(--text-muted);">${l.color || ''} | ${l.size || ''} | ${l.clarity || ''}</span></td>
+                        <td style="text-align: right;">${Number(l.carats || 0).toFixed(3)} Cts</td>
+                        <td style="text-align: right;">₹${Number(l.rate || 0).toLocaleString('en-IN')}</td>
                         <td style="text-align: right;">₹${Math.round(costRate).toLocaleString('en-IN')}</td>
                         <td style="text-align: right; font-weight:700; color:${profit >= 0 ? 'var(--success-color)' : 'var(--danger-color)'}">₹${Math.round(profit).toLocaleString('en-IN')}</td>
                         <td style="text-align: right; font-weight:700; color:${profit >= 0 ? 'var(--success-color)' : 'var(--danger-color)'}">${marginPct.toFixed(1)}%</td>
@@ -6254,10 +6254,10 @@
             } else {
                 const buckets = { 'Loss (<0%)': 0, 'Low (0-5%)': 0, 'Medium (5-15%)': 0, 'High (>15%)': 0 };
                 sales.forEach(l => {
-                    const cleanSize = l.size.replace(/ Sieve| size/gi, '').trim();
+                    const cleanSize = (l.size || '').toString().replace(/ Sieve| size/gi, '').trim();
                     const costRate = getAveragePurchaseRate(cleanSize, l.clarity);
-                    const profit = l.amount - (l.carats * costRate);
-                    const marginPct = l.amount > 0 ? (profit / l.amount) * 100 : 0;
+                    const profit = Number(l.amount || 0) - (Number(l.carats || 0) * costRate);
+                    const marginPct = Number(l.amount || 0) > 0 ? (profit / Number(l.amount || 0)) * 100 : 0;
 
                     if (marginPct < 0) buckets['Loss (<0%)']++;
                     else if (marginPct <= 5) buckets['Low (0-5%)']++;
